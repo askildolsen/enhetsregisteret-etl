@@ -12,9 +12,11 @@ public class DocumentStoreHolder
 		IDocumentStore store = new DocumentStore()
 		{
 		    Urls = new[] { "http://localhost:8080" },
-                  Database = "Digitalisert"
-		}.Initialize();
+			Database = "Digitalisert",
+		};
 
-		return store;
+		store.Conventions.FindCollectionName = t => t.Name;
+
+		return store.Initialize();
 	}
 }

@@ -14,6 +14,8 @@ namespace enhetsregisteret_etl
     {
         static void Main(string[] args)
         {
+            new Enhetsregisteret.EnhetsregisteretIndex().Execute(DocumentStoreHolder.Store);
+
             WebRequest request = WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter");
             using (WebResponse response = request.GetResponse())
             {
@@ -26,7 +28,6 @@ namespace enhetsregisteret_etl
                     var store = DocumentStoreHolder.Store;
                     using (BulkInsertOperation bulkInsert = store.BulkInsert())
                     {
-
                         while(!reader.EndOfStream)
                         {
                             var values = reader.ReadLine().Split(new[] { ';' });
@@ -56,4 +57,3 @@ namespace enhetsregisteret_etl
         }
     }
 }
-
