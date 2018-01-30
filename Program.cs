@@ -16,42 +16,16 @@ namespace enhetsregisteret_etl
         {
             new Enhetsregisteret.EnhetsregisteretIndex().Execute(DocumentStoreHolder.Store);
 
-            WebRequest request = WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter");
-            using (WebResponse response = request.GetResponse())
+            using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
             {
-                using (var stream = response.GetResponseStream())
-                using (var gzipstream = new GZipStream(stream, CompressionMode.Decompress))
-                using (StreamReader reader = new StreamReader(gzipstream))
+                foreach (dynamic enhet in Csv.ExpandoStream(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter")))
                 {
-                    var headers = reader.ReadLine().Split(new[] { ';' });
-
-                    var store = DocumentStoreHolder.Store;
-                    using (BulkInsertOperation bulkInsert = store.BulkInsert())
-                    {
-                        while(!reader.EndOfStream)
-                        {
-                            var values = reader.ReadLine().Split(new[] { ';' });
-
-                            var enhet = headers.Zip(values, (header, value) => new { header, value} )
-                                                .ToDictionary(item => item.header.Trim('"'), item => (object)item.value.Trim('"'));
-
-                            dynamic expando = new ExpandoObject();
-                            var expandoDic = (IDictionary<string, object>)expando;
-
-                            foreach (var kvp in enhet)
-                            {
-                                expandoDic.Add(kvp);
-                            }
-
-                            bulkInsert.Store(
-                                expando,
-                                "Enhetsregisteret/" + expando.organisasjonsnummer,
-                                new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
-                            );
-
-                            Console.WriteLine("Lastet " + expando.navn);
-                        }
-                    }
+                    Console.WriteLine(enhet.navn);
+                    bulkInsert.Store(
+                        enhet,
+                        "Enhetsregisteret/" + enhet.organisasjonsnummer,
+                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
+                    );                    
                 }
             }
         }
