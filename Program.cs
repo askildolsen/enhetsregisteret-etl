@@ -28,6 +28,19 @@ namespace enhetsregisteret_etl
                     );                    
                 }
             }
+
+            using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
+            {
+                foreach (dynamic underenhet in Csv.ExpandoStream(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/underenheter")))
+                {
+                    Console.WriteLine(underenhet.navn);
+                    bulkInsert.Store(
+                        underenhet,
+                        "Enhetsregisteret/" + underenhet.organisasjonsnummer,
+                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
+                    );                     
+                }
+            }
         }
     }
 }
