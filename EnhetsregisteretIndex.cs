@@ -36,16 +36,16 @@ namespace Enhetsregisteret
             );
 
             AddMap<Enhetsregisteret>(enheter =>
-                from enhet in enheter
-                where !String.IsNullOrEmpty(enhet.overordnetEnhet)
+                from underenhet in enheter
+                where !String.IsNullOrEmpty(underenhet.overordnetEnhet)
                 select new Enhet
                 {
-                    Organisasjonsnummer = enhet.overordnetEnhet,
+                    Organisasjonsnummer = underenhet.overordnetEnhet,
                     Navn = null,
                     Underenheter = new Enhet[] {
                         new Enhet {
-                            Organisasjonsnummer = enhet.organisasjonsnummer,
-                            Navn = enhet.navn                           
+                            Organisasjonsnummer = underenhet.organisasjonsnummer,
+                            Navn = underenhet.navn                           
                         }
                      }
                 }
