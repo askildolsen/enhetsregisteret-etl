@@ -16,7 +16,7 @@ namespace enhetsregisteret_etl
         {
             new Enhetsregisteret.EnhetsregisteretIndex().Execute(DocumentStoreHolder.Store);
 
-            using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
+            /*using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
             {
                 foreach (dynamic enhet in Csv.ExpandoStream(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter")))
                 {
@@ -40,7 +40,7 @@ namespace enhetsregisteret_etl
                         new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
                     );                     
                 }
-            }
+            }*/
         }
     }
 }
