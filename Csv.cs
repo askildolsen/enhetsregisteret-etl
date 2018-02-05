@@ -20,24 +20,23 @@ namespace enhetsregisteret_etl
                 using (var gzipstream = new GZipStream(stream, CompressionMode.Decompress))
                 using (StreamReader reader = new StreamReader(gzipstream))
                 {
-                    var headers = reader.ReadLine().Split(new[] { ';' });
+                    var headers = reader.ReadLine().Split(new[] { ';' }).Select(h => h.Trim('"').Replace('.', '_'));
 
                     var store = DocumentStoreHolder.Store;
                     using (BulkInsertOperation bulkInsert = store.BulkInsert())
                     {
                         while(!reader.EndOfStream)
                         {
-                            var values = reader.ReadLine().Split(new[] { ';' });
-
-                            var enhet = headers.Zip(values, (header, value) => new { header, value} )
-                                                .ToDictionary(item => item.header.Trim('"'), item => (object)item.value.Trim('"'));
-
                             dynamic expando = new ExpandoObject();
                             var expandoDic = (IDictionary<string, object>)expando;
 
-                            foreach (var kvp in enhet)
+                            var values = reader.ReadLine().Split(new[] { ';' }).Select(v => v.Trim('"'));
+
+                            foreach (var kvp in headers
+                                .Zip(values, (header, value) => new { header = header, value } )
+                                .Where(item => !String.IsNullOrWhiteSpace(item.value)))
                             {
-                                expandoDic.Add(kvp);
+                                expandoDic.Add(kvp.header, kvp.value);
                             }
 
                             yield return expando;
