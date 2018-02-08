@@ -32,8 +32,7 @@ namespace enhetsregisteret_etl
 
                             var values = reader.ReadLine().Split(new[] { ';' }).Select(v => v.Trim('"'));
 
-                            foreach (var kvp in headers
-                                .Zip(values, (header, value) => new { header = header, value } )
+                            foreach (var kvp in headers.Zip(values, (header, value) => new { header, value } )
                                 .Where(item => !String.IsNullOrWhiteSpace(item.value)))
                             {
                                 expandoDic.Add(kvp.header, kvp.value);
