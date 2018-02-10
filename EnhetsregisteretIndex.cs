@@ -18,6 +18,9 @@ namespace Enhetsregisteret
             public string forretningsadresse_adresse { get; set; }
             public string forretningsadresse_postnummer { get; set; }
             public string forretningsadresse_poststed { get; set; }
+            public string beliggenhetsadresse_adresse { get; set; }
+            public string beliggenhetsadresse_postnummer { get; set; }
+            public string beliggenhetsadresse_poststed { get; set; }            
             public string naeringskode1_kode { get; set; }
             public string naeringskode1_beskrivelse { get; set; }
             public string naeringskode2_kode { get; set; }
@@ -36,6 +39,7 @@ namespace Enhetsregisteret
             public IEnumerable<KodeListe> Naeringskoder { get; set; }
             public GeografiskAdresse Postadresse { get; set; }
             public GeografiskAdresse Forretningsadresse { get; set; }
+            public GeografiskAdresse Beliggenhetsadresse { get; set; }
             public IEnumerable<Enhet> Underenheter { get; set; }
         }
 
@@ -104,7 +108,33 @@ namespace Enhetsregisteret
                     Underenheter = new Enhet[] {
                         new Enhet {
                             Organisasjonsnummer = underenhet.organisasjonsnummer,
-                            Navn = underenhet.navn                           
+                            Navn = underenhet.navn,
+                            Organisasjonsform =
+                                new KodeListe
+                                {
+                                    Kode = underenhet.orgform_kode,
+                                    Beskrivelse = underenhet.orgform_beskrivelse
+                                },
+                            Naeringskoder =
+                                new[] {
+                                    new KodeListe { Kode = underenhet.naeringskode1_kode, Beskrivelse = underenhet.naeringskode1_beskrivelse },
+                                    new KodeListe { Kode = underenhet.naeringskode2_kode, Beskrivelse = underenhet.naeringskode2_beskrivelse },
+                                    new KodeListe { Kode = underenhet.naeringskode3_kode, Beskrivelse = underenhet.naeringskode3_beskrivelse }
+                                }.Where(n => !String.IsNullOrEmpty(n.Kode)),
+                            Postadresse = (String.IsNullOrEmpty(underenhet.postadresse_postnummer)) ? null :
+                                new GeografiskAdresse
+                                {
+                                    Adresse = underenhet.postadresse_adresse,
+                                    Postnummer = underenhet.postadresse_postnummer,
+                                    PostSted = underenhet.postadresse_poststed
+                                },
+                            Beliggenhetsadresse = (String.IsNullOrEmpty(underenhet.beliggenhetsadresse_postnummer)) ? null :
+                                new GeografiskAdresse
+                                {
+                                    Adresse = underenhet.beliggenhetsadresse_adresse,
+                                    Postnummer = underenhet.beliggenhetsadresse_postnummer,
+                                    PostSted = underenhet.beliggenhetsadresse_poststed
+                                }                        
                         }
                      }
                 }
