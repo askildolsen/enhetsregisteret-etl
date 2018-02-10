@@ -15,12 +15,24 @@ namespace Enhetsregisteret
             public string postadresse_adresse { get; set; }
             public string postadresse_postnummer { get; set; }
             public string postadresse_poststed { get; set; }
+            public string postadresse_kommunenummer { get; set; }
+            public string postadresse_kommune { get; set; }
+            public string postadresse_landkode { get; set; }
+            public string postadresse_land { get; set; }
             public string forretningsadresse_adresse { get; set; }
             public string forretningsadresse_postnummer { get; set; }
             public string forretningsadresse_poststed { get; set; }
+            public string forretningsadresse_kommunenummer { get; set; }
+            public string forretningsadresse_kommune { get; set; }
+            public string forretningsadresse_landkode { get; set; }
+            public string forretningsadresse_land { get; set; }
             public string beliggenhetsadresse_adresse { get; set; }
             public string beliggenhetsadresse_postnummer { get; set; }
-            public string beliggenhetsadresse_poststed { get; set; }            
+            public string beliggenhetsadresse_poststed { get; set; }
+            public string beliggenhetsadresse_kommunenummer { get; set; }
+            public string beliggenhetsadresse_kommune { get; set; }
+            public string beliggenhetsadresse_landkode { get; set; }
+            public string beliggenhetsadresse_land { get; set; }
             public string naeringskode1_kode { get; set; }
             public string naeringskode1_beskrivelse { get; set; }
             public string naeringskode2_kode { get; set; }
@@ -48,6 +60,8 @@ namespace Enhetsregisteret
             public string Adresse { get; set; }
             public string Postnummer { get; set; }
             public string PostSted { get; set; }
+            public KodeListe Kommune { get; set; }
+            public KodeListe Land { get; set; }
         }
 
         public class KodeListe{
@@ -81,14 +95,18 @@ namespace Enhetsregisteret
                         {
                             Adresse = enhet.postadresse_adresse,
                             Postnummer = enhet.postadresse_postnummer,
-                            PostSted = enhet.postadresse_poststed
+                            PostSted = enhet.postadresse_poststed,
+                            Kommune = new KodeListe { Kode = enhet.postadresse_kommunenummer, Beskrivelse = enhet.postadresse_kommune },
+                            Land = new KodeListe { Kode = enhet.postadresse_landkode, Beskrivelse = enhet.postadresse_land }
                         },
                     Forretningsadresse = (String.IsNullOrEmpty(enhet.forretningsadresse_postnummer)) ? null :
                         new GeografiskAdresse
                         {
                             Adresse = enhet.forretningsadresse_adresse,
                             Postnummer = enhet.forretningsadresse_postnummer,
-                            PostSted = enhet.forretningsadresse_poststed
+                            PostSted = enhet.forretningsadresse_poststed,
+                            Kommune = new KodeListe { Kode = enhet.forretningsadresse_kommunenummer, Beskrivelse = enhet.forretningsadresse_kommune },
+                            Land = new KodeListe { Kode = enhet.forretningsadresse_landkode, Beskrivelse = enhet.forretningsadresse_land }
                         },                        
                     Underenheter = new Enhet[] { }
                 }
@@ -126,15 +144,19 @@ namespace Enhetsregisteret
                                 {
                                     Adresse = underenhet.postadresse_adresse,
                                     Postnummer = underenhet.postadresse_postnummer,
-                                    PostSted = underenhet.postadresse_poststed
+                                    PostSted = underenhet.postadresse_poststed,
+                                    Kommune = new KodeListe { Kode = underenhet.postadresse_kommunenummer, Beskrivelse = underenhet.postadresse_kommune },
+                                    Land = new KodeListe { Kode = underenhet.postadresse_landkode, Beskrivelse = underenhet.postadresse_land }                                    
                                 },
                             Beliggenhetsadresse = (String.IsNullOrEmpty(underenhet.beliggenhetsadresse_postnummer)) ? null :
                                 new GeografiskAdresse
                                 {
                                     Adresse = underenhet.beliggenhetsadresse_adresse,
                                     Postnummer = underenhet.beliggenhetsadresse_postnummer,
-                                    PostSted = underenhet.beliggenhetsadresse_poststed
-                                }                        
+                                    PostSted = underenhet.beliggenhetsadresse_poststed,
+                                    Kommune = new KodeListe { Kode = underenhet.beliggenhetsadresse_kommunenummer, Beskrivelse = underenhet.beliggenhetsadresse_kommune },
+                                    Land = new KodeListe { Kode = underenhet.beliggenhetsadresse_landkode, Beskrivelse = underenhet.beliggenhetsadresse_land }
+                                }
                         }
                      }
                 }
