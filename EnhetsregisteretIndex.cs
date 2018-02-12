@@ -76,7 +76,7 @@ namespace Enhetsregisteret
         {
             AddMap<Enhetsregisteret>(enheter =>
                 from enhet in enheter
-                where String.IsNullOrEmpty(enhet.overordnetEnhet)
+                where !(new[] { "BEDR", "AAFY"}.Contains(enhet.orgform_kode))
                 select new Enhet
                 {
                     Organisasjonsnummer = enhet.organisasjonsnummer,
@@ -123,7 +123,7 @@ namespace Enhetsregisteret
 
             AddMap<Enhetsregisteret>(enheter =>
                 from underenhet in enheter
-                where !String.IsNullOrEmpty(underenhet.overordnetEnhet)
+                where new[] { "BEDR", "AAFY"}.Contains(underenhet.orgform_kode)
                 select new Enhet
                 {
                     Organisasjonsnummer = underenhet.overordnetEnhet,
