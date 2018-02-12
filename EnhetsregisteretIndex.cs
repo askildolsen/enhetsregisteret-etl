@@ -33,6 +33,8 @@ namespace Enhetsregisteret
             public string beliggenhetsadresse_kommune { get; set; }
             public string beliggenhetsadresse_landkode { get; set; }
             public string beliggenhetsadresse_land { get; set; }
+            public string institusjonellSektorkode_kode { get; set; }
+            public string institusjonellSektorkode_beskrivelse { get; set; }
             public string naeringskode1_kode { get; set; }
             public string naeringskode1_beskrivelse { get; set; }
             public string naeringskode2_kode { get; set; }
@@ -48,6 +50,7 @@ namespace Enhetsregisteret
             public string Organisasjonsnummer { get; set; }
             public string Navn { get; set; }
             public KodeListe Organisasjonsform { get; set; }
+            public KodeListe Sektorkode { get; set; }
             public IEnumerable<KodeListe> Naeringskoder { get; set; }
             public GeografiskAdresse Postadresse { get; set; }
             public GeografiskAdresse Forretningsadresse { get; set; }
@@ -83,6 +86,12 @@ namespace Enhetsregisteret
                         {
                             Kode = enhet.orgform_kode,
                             Beskrivelse = enhet.orgform_beskrivelse
+                        },
+                   Sektorkode =
+                        new KodeListe
+                        {
+                            Kode = enhet.institusjonellSektorkode_kode,
+                            Beskrivelse = enhet.institusjonellSektorkode_beskrivelse
                         },
                     Naeringskoder =
                         new[] {
@@ -120,6 +129,7 @@ namespace Enhetsregisteret
                     Organisasjonsnummer = underenhet.overordnetEnhet,
                     Navn = null,
                     Organisasjonsform = null,
+                    Sektorkode = null,
                     Naeringskoder = null,
                     Postadresse = null,
                     Forretningsadresse = null,
@@ -170,6 +180,7 @@ namespace Enhetsregisteret
                     Organisasjonsnummer = g.Key,
                     Navn = g.Select(enhet => enhet.Navn).FirstOrDefault(navn => navn != null),
                     Organisasjonsform = g.Select(enhet => enhet.Organisasjonsform).FirstOrDefault(organisasjonsform => organisasjonsform != null),
+                    Sektorkode = g.Select(enhet => enhet.Sektorkode).FirstOrDefault(sektorkode => sektorkode != null),
                     Naeringskoder = g.Select(enhet => enhet.Naeringskoder).FirstOrDefault(naeringskoder => naeringskoder != null),
                     Postadresse = g.Select(enhet => enhet.Postadresse).FirstOrDefault(adresse => adresse != null),
                     Forretningsadresse = g.Select(enhet => enhet.Forretningsadresse).FirstOrDefault(adresse => adresse != null),
