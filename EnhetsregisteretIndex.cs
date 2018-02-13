@@ -87,7 +87,7 @@ namespace Enhetsregisteret
                             Kode = enhet.orgform_kode,
                             Beskrivelse = enhet.orgform_beskrivelse
                         },
-                   Sektorkode =
+                   Sektorkode = (String.IsNullOrEmpty(enhet.institusjonellSektorkode_kode)) ? null :
                         new KodeListe
                         {
                             Kode = enhet.institusjonellSektorkode_kode,
