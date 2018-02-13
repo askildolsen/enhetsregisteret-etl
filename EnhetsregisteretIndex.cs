@@ -99,7 +99,7 @@ namespace Enhetsregisteret
                             new KodeListe { Kode = enhet.naeringskode2_kode, Beskrivelse = enhet.naeringskode2_beskrivelse },
                             new KodeListe { Kode = enhet.naeringskode3_kode, Beskrivelse = enhet.naeringskode3_beskrivelse }
                         }.Where(n => !String.IsNullOrEmpty(n.Kode)),
-                    Postadresse = (String.IsNullOrEmpty(enhet.postadresse_postnummer)) ? null :
+                    Postadresse = (String.IsNullOrEmpty(enhet.postadresse_landkode)) ? null :
                         new GeografiskAdresse
                         {
                             Adresse = enhet.postadresse_adresse,
@@ -108,7 +108,7 @@ namespace Enhetsregisteret
                             Kommune = new KodeListe { Kode = enhet.postadresse_kommunenummer, Beskrivelse = enhet.postadresse_kommune },
                             Land = new KodeListe { Kode = enhet.postadresse_landkode, Beskrivelse = enhet.postadresse_land }
                         },
-                    Forretningsadresse = (String.IsNullOrEmpty(enhet.forretningsadresse_postnummer)) ? null :
+                    Forretningsadresse = (String.IsNullOrEmpty(enhet.forretningsadresse_landkode)) ? null :
                         new GeografiskAdresse
                         {
                             Adresse = enhet.forretningsadresse_adresse,
@@ -149,7 +149,7 @@ namespace Enhetsregisteret
                                     new KodeListe { Kode = underenhet.naeringskode2_kode, Beskrivelse = underenhet.naeringskode2_beskrivelse },
                                     new KodeListe { Kode = underenhet.naeringskode3_kode, Beskrivelse = underenhet.naeringskode3_beskrivelse }
                                 }.Where(n => !String.IsNullOrEmpty(n.Kode)),
-                            Postadresse = (String.IsNullOrEmpty(underenhet.postadresse_postnummer)) ? null :
+                            Postadresse = (String.IsNullOrEmpty(underenhet.postadresse_landkode)) ? null :
                                 new GeografiskAdresse
                                 {
                                     Adresse = underenhet.postadresse_adresse,
@@ -158,7 +158,7 @@ namespace Enhetsregisteret
                                     Kommune = new KodeListe { Kode = underenhet.postadresse_kommunenummer, Beskrivelse = underenhet.postadresse_kommune },
                                     Land = new KodeListe { Kode = underenhet.postadresse_landkode, Beskrivelse = underenhet.postadresse_land }                                    
                                 },
-                            Beliggenhetsadresse = (String.IsNullOrEmpty(underenhet.beliggenhetsadresse_postnummer)) ? null :
+                            Beliggenhetsadresse = (String.IsNullOrEmpty(underenhet.beliggenhetsadresse_landkode)) ? null :
                                 new GeografiskAdresse
                                 {
                                     Adresse = underenhet.beliggenhetsadresse_adresse,
