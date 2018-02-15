@@ -22,24 +22,20 @@ namespace enhetsregisteret_etl
                 {
                     var headers = reader.ReadLine().Split(new[] { ';' }).Select(h => h.Trim('"').Replace('.', '_'));
 
-                    var store = DocumentStoreHolder.Store;
-                    using (BulkInsertOperation bulkInsert = store.BulkInsert())
+                    while(!reader.EndOfStream)
                     {
-                        while(!reader.EndOfStream)
+                        dynamic expando = new ExpandoObject();
+                        var expandoDic = (IDictionary<string, object>)expando;
+
+                        var values = reader.ReadLine().Split(new[] { ';' }).Select(v => v.Trim('"'));
+
+                        foreach (var kvp in headers.Zip(values, (header, value) => new { header, value } )
+                            .Where(item => !String.IsNullOrWhiteSpace(item.value)))
                         {
-                            dynamic expando = new ExpandoObject();
-                            var expandoDic = (IDictionary<string, object>)expando;
-
-                            var values = reader.ReadLine().Split(new[] { ';' }).Select(v => v.Trim('"'));
-
-                            foreach (var kvp in headers.Zip(values, (header, value) => new { header, value } )
-                                .Where(item => !String.IsNullOrWhiteSpace(item.value)))
-                            {
-                                expandoDic.Add(kvp.header, kvp.value);
-                            }
-
-                            yield return expando;
+                            expandoDic.Add(kvp.header, kvp.value);
                         }
+
+                        yield return expando;
                     }
                 }
             }
