@@ -20,7 +20,7 @@ namespace enhetsregisteret_etl
                 using (var gzipstream = new GZipStream(stream, CompressionMode.Decompress))
                 using (StreamReader reader = new StreamReader(gzipstream))
                 {
-                    var headers = reader.ReadLine().Split(new[] { ';' }).Select(h => h.Trim('"').Replace('.', '_'));
+                    var headers = reader.ReadLine().Split(new[] { ';' }).Select(h => h.Trim('"'));
 
                     while(!reader.EndOfStream)
                     {
