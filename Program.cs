@@ -25,7 +25,7 @@ namespace enhetsregisteret_etl
                         enhet,
                         "Enhetsregisteret/" + enhet.organisasjonsnummer,
                         new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
-                    );                    
+                    );               
                 }
             }
 
@@ -38,7 +38,7 @@ namespace enhetsregisteret_etl
                         underenhet,
                         "Enhetsregisteret/" + underenhet.organisasjonsnummer,
                         new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
-                    );                     
+                    );                  
                 }
             }
         }

@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using Raven.Client.Documents.BulkInsert;
 using Raven.Client.Json;
 
@@ -20,14 +21,15 @@ namespace enhetsregisteret_etl
                 using (var gzipstream = new GZipStream(stream, CompressionMode.Decompress))
                 using (StreamReader reader = new StreamReader(gzipstream))
                 {
-                    var headers = reader.ReadLine().Split(new[] { ';' }).Select(h => h.Trim('"'));
+                    var CSVParser = new Regex(@"(""([^""]*)""|[^;]*)(;|$)", RegexOptions.Compiled);
+                    var headers = CSVParser.Matches(reader.ReadLine()).Select(m => m.Value.Trim(';').Trim('"'));
 
                     while(!reader.EndOfStream)
                     {
                         dynamic expando = new ExpandoObject();
                         var expandoDic = (IDictionary<string, object>)expando;
 
-                        var values = reader.ReadLine().Split(new[] { ';' }).Select(v => v.Trim('"'));
+                        var values = CSVParser.Matches(reader.ReadLine()).Select(m => m.Value.Trim(';').Trim('"'));
 
                         foreach (var kvp in headers.Zip(values, (header, value) => new { header, value } )
                             .Where(item => !String.IsNullOrWhiteSpace(item.value)))
