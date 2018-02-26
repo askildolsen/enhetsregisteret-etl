@@ -42,7 +42,6 @@ namespace Enhetsregisteret
             AddMap<Enhetsregisteret>(enheter =>
                 from e in enheter
                 let enhet = (IDictionary<string, string>)(object)e
-                where !(new[] { "BEDR", "AAFY"}.Contains(enhet["orgform.kode"]))
                 select new Enhet
                 {
                     Organisasjonsnummer = enhet["organisasjonsnummer"],
@@ -82,7 +81,16 @@ namespace Enhetsregisteret
                             PostSted = enhet["forretningsadresse.poststed"],
                             Kommune = new KodeListe { Kode = enhet["forretningsadresse.kommunenummer"], Beskrivelse = enhet["forretningsadresse.kommune"] },
                             Land = new KodeListe { Kode = enhet["forretningsadresse.landkode"], Beskrivelse = enhet["forretningsadresse.land"] }
-                        },                        
+                        },
+                    Beliggenhetsadresse = (String.IsNullOrEmpty(enhet["beliggenhetsadresse.landkode"])) ? null :
+                        new GeografiskAdresse
+                        {
+                            Adresse = enhet["beliggenhetsadresse.adresse"],
+                            Postnummer = enhet["beliggenhetsadresse.postnummer"],
+                            PostSted = enhet["beliggenhetsadresse.poststed"],
+                            Kommune = new KodeListe { Kode = enhet["beliggenhetsadresse.kommunenummer"], Beskrivelse = enhet["beliggenhetsadresse.kommune"] },
+                            Land = new KodeListe { Kode = enhet["beliggenhetsadresse.landkode"], Beskrivelse = enhet["beliggenhetsadresse.land"] }
+                        },
                     Underenheter = new Enhet[] { }
                 }
             );
@@ -90,7 +98,7 @@ namespace Enhetsregisteret
             AddMap<Enhetsregisteret>(enheter =>
                 from ue in enheter
                 let underenhet = (IDictionary<string, string>)(object)ue
-                where new[] { "BEDR", "AAFY"}.Contains(underenhet["orgform.kode"])
+                where !String.IsNullOrEmpty(underenhet["overordnetEnhet"])
                 select new Enhet
                 {
                     Organisasjonsnummer = underenhet["overordnetEnhet"],
@@ -100,40 +108,11 @@ namespace Enhetsregisteret
                     Naeringskoder = null,
                     Postadresse = null,
                     Forretningsadresse = null,
+                    Beliggenhetsadresse = null,
                     Underenheter = new Enhet[] {
                         new Enhet {
                             Organisasjonsnummer = underenhet["organisasjonsnummer"],
-                            Navn = underenhet["navn"],
-                            Organisasjonsform =
-                                new KodeListe
-                                {
-                                    Kode = underenhet["orgform.kode"],
-                                    Beskrivelse = underenhet["orgform.beskrivelse"]
-                                },
-                            Naeringskoder =
-                                new[] {
-                                    new KodeListe { Kode = underenhet["naeringskode1.kode"], Beskrivelse = underenhet["naeringskode1.beskrivelse"] },
-                                    new KodeListe { Kode = underenhet["naeringskode2.kode"], Beskrivelse = underenhet["naeringskode2.beskrivelse"] },
-                                    new KodeListe { Kode = underenhet["naeringskode3.kode"], Beskrivelse = underenhet["naeringskode3.beskrivelse"] }
-                                }.Where(n => !String.IsNullOrEmpty(n.Kode)),
-                            Postadresse = (String.IsNullOrEmpty(underenhet["postadresse.landkode"])) ? null :
-                                new GeografiskAdresse
-                                {
-                                    Adresse = underenhet["postadresse.adresse"],
-                                    Postnummer = underenhet["postadresse.postnummer"],
-                                    PostSted = underenhet["postadresse.poststed"],
-                                    Kommune = new KodeListe { Kode = underenhet["postadresse.kommunenummer"], Beskrivelse = underenhet["postadresse.kommune"] },
-                                    Land = new KodeListe { Kode = underenhet["postadresse.landkode"], Beskrivelse = underenhet["postadresse.land"] }                                    
-                                },
-                            Beliggenhetsadresse = (String.IsNullOrEmpty(underenhet["beliggenhetsadresse.landkode"])) ? null :
-                                new GeografiskAdresse
-                                {
-                                    Adresse = underenhet["beliggenhetsadresse.adresse"],
-                                    Postnummer = underenhet["beliggenhetsadresse.postnummer"],
-                                    PostSted = underenhet["beliggenhetsadresse.poststed"],
-                                    Kommune = new KodeListe { Kode = underenhet["beliggenhetsadresse.kommunenummer"], Beskrivelse = underenhet["beliggenhetsadresse.kommune"] },
-                                    Land = new KodeListe { Kode = underenhet["beliggenhetsadresse.landkode"], Beskrivelse = underenhet["beliggenhetsadresse.land"] }
-                                }
+                            Navn = underenhet["navn"]
                         }
                      }
                 }
@@ -151,6 +130,7 @@ namespace Enhetsregisteret
                     Naeringskoder = g.Select(enhet => enhet.Naeringskoder).FirstOrDefault(naeringskoder => naeringskoder != null),
                     Postadresse = g.Select(enhet => enhet.Postadresse).FirstOrDefault(adresse => adresse != null),
                     Forretningsadresse = g.Select(enhet => enhet.Forretningsadresse).FirstOrDefault(adresse => adresse != null),
+                    Beliggenhetsadresse = g.Select(enhet => enhet.Beliggenhetsadresse).FirstOrDefault(adresse => adresse != null),
                     Underenheter = g.SelectMany(enhet => enhet.Underenheter)
                 };
 
