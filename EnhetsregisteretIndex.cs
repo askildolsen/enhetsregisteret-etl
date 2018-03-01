@@ -20,6 +20,7 @@ namespace Enhetsregisteret
             public GeografiskAdresse Postadresse { get; set; }
             public GeografiskAdresse Forretningsadresse { get; set; }
             public GeografiskAdresse Beliggenhetsadresse { get; set; }
+            public IEnumerable<Enhet> Overenheter { get; set; }
             public IEnumerable<Enhet> Underenheter { get; set; }
         }
 
@@ -91,6 +92,36 @@ namespace Enhetsregisteret
                             Kommune = new KodeListe { Kode = enhet["beliggenhetsadresse.kommunenummer"], Beskrivelse = enhet["beliggenhetsadresse.kommune"] },
                             Land = new KodeListe { Kode = enhet["beliggenhetsadresse.landkode"], Beskrivelse = enhet["beliggenhetsadresse.land"] }
                         },
+                    Overenheter = new Enhet[] { },
+                    Underenheter = new Enhet[] { }
+                }
+            );
+
+            AddMap<Enhetsregisteret>(enheter =>
+                from e in enheter
+                let enhet = (IDictionary<string, string>)(object)e
+                where enhet.ContainsKey("overordnetEnhet")
+                select new Enhet
+                {
+                    Organisasjonsnummer = enhet["organisasjonsnummer"],
+                    Navn = null,
+                    Organisasjonsform = null,
+                    Sektorkode = null,
+                    Naeringskoder = null,
+                    Postadresse = null,
+                    Forretningsadresse = null,
+                    Beliggenhetsadresse = null,
+                    Overenheter = (
+                        from over in
+                            Recurse(enhet,
+                                o => (o.ContainsKey("overordnetEnhet")) ? LoadDocument<Enhetsregisteret>("Enhetsregisteret/" + o["overordnetEnhet"]) : null
+                            ).Skip(1)
+                        let overenhet = (IDictionary<string, string>)(object)over
+                        select new Enhet
+                        {
+                            Organisasjonsnummer = overenhet["organisasjonsnummer"],
+                            Navn = overenhet["navn"]
+                        }).Reverse(),
                     Underenheter = new Enhet[] { }
                 }
             );
@@ -109,8 +140,10 @@ namespace Enhetsregisteret
                     Postadresse = null,
                     Forretningsadresse = null,
                     Beliggenhetsadresse = null,
+                    Overenheter = new Enhet[] { },
                     Underenheter = new Enhet[] {
-                        new Enhet {
+                        new Enhet
+                        {
                             Organisasjonsnummer = underenhet["organisasjonsnummer"],
                             Navn = underenhet["navn"]
                         }
@@ -131,6 +164,7 @@ namespace Enhetsregisteret
                     Postadresse = g.Select(enhet => enhet.Postadresse).FirstOrDefault(adresse => adresse != null),
                     Forretningsadresse = g.Select(enhet => enhet.Forretningsadresse).FirstOrDefault(adresse => adresse != null),
                     Beliggenhetsadresse = g.Select(enhet => enhet.Beliggenhetsadresse).FirstOrDefault(adresse => adresse != null),
+                    Overenheter = g.SelectMany(enhet => enhet.Overenheter),
                     Underenheter = g.SelectMany(enhet => enhet.Underenheter)
                 };
 
