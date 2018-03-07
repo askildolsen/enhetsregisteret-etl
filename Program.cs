@@ -18,7 +18,7 @@ namespace enhetsregisteret_etl
 
             using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
             {
-                foreach (dynamic enhet in Csv.ExpandoStream(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter")))
+                foreach (dynamic enhet in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter")))
                 {
                     Console.WriteLine(enhet.navn);
                     bulkInsert.Store(
@@ -31,7 +31,7 @@ namespace enhetsregisteret_etl
 
             using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
             {
-                foreach (dynamic underenhet in Csv.ExpandoStream(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/underenheter")))
+                foreach (dynamic underenhet in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/underenheter")))
                 {
                     Console.WriteLine(underenhet.navn);
                     bulkInsert.Store(
@@ -39,6 +39,18 @@ namespace enhetsregisteret_etl
                         "Enhetsregisteret/" + underenhet.organisasjonsnummer,
                         new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
                     );                  
+                }
+            }
+
+            using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
+            {
+                foreach (dynamic frivillig in Csv.ExpandoStream(WebRequest.Create("http://hotell.difi.no/download/brreg/frivillighetsregisteret")))
+                {
+                    bulkInsert.Store(
+                        frivillig,
+                        "Frivillighetsregisteret/" + frivillig.orgnr,
+                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Frivillighetsregisteret"}})
+                    );
                 }
             }
         }
