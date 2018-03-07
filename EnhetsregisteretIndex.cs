@@ -9,6 +9,8 @@ namespace Enhetsregisteret
     public class EnhetsregisteretIndex : AbstractMultiMapIndexCreationTask<EnhetsregisteretIndex.Enhet>
     {
         public class Enhetsregisteret { }
+        public class Frivillighetsregisteret { }
+        public class Stotteregisteret { }
 
         public class Enhet
         {
@@ -22,6 +24,8 @@ namespace Enhetsregisteret
             public GeografiskAdresse Beliggenhetsadresse { get; set; }
             public IEnumerable<Enhet> Overenheter { get; set; }
             public IEnumerable<Enhet> Underenheter { get; set; }
+            public Frivillig Frivillig { get; set; }
+            public IEnumerable<Stotte> Stotte { get; set; }
         }
 
         public class GeografiskAdresse
@@ -33,9 +37,27 @@ namespace Enhetsregisteret
             public KodeListe Land { get; set; }
         }
 
-        public class KodeListe{
+        public class KodeListe
+        {
             public string Kode { get; set; }
             public string Beskrivelse { get; set; }
+        }
+
+        public class Stotte
+        {
+            public DateTime Tildelingsdato { get; set; }
+            public IEnumerable<decimal> Belop { get; set; }
+            public string Valuta { get; set; }
+            public string Navn { get; set; }
+            public string Formaal { get; set; }
+            public string Instrument { get; set; }
+            public Enhet Spesifisert { get; set; }
+            public Enhet Giver { get; set; }
+        }
+
+        public class Frivillig
+        {
+            public IEnumerable<KodeListe> Kategorier { get; set; }
         }
 
         public EnhetsregisteretIndex()
@@ -93,7 +115,9 @@ namespace Enhetsregisteret
                             Land = new KodeListe { Kode = enhet["beliggenhetsadresse.landkode"], Beskrivelse = enhet["beliggenhetsadresse.land"] }
                         },
                     Overenheter = new Enhet[] { },
-                    Underenheter = new Enhet[] { }
+                    Underenheter = new Enhet[] { },
+                    Frivillig = null,
+                    Stotte = new Stotte[] { }
                 }
             );
 
@@ -122,7 +146,9 @@ namespace Enhetsregisteret
                             Organisasjonsnummer = overenhet["organisasjonsnummer"],
                             Navn = overenhet["navn"]
                         }).Reverse(),
-                    Underenheter = new Enhet[] { }
+                    Underenheter = new Enhet[] { },
+                    Frivillig = null,
+                    Stotte = new Stotte[] { }
                 }
             );
 
@@ -147,7 +173,82 @@ namespace Enhetsregisteret
                             Organisasjonsnummer = underenhet["organisasjonsnummer"],
                             Navn = underenhet["navn"]
                         }
-                     }
+                    },
+                    Frivillig = null,
+                    Stotte = new Stotte[] { }
+                }
+            );
+
+            AddMap<Frivillighetsregisteret>(frivilligreg =>
+                from f in frivilligreg
+                let frivillig = (IDictionary<string, string>)(object)f
+                select new Enhet
+                {
+                    Organisasjonsnummer = frivillig["orgnr"],
+                    Navn = null,
+                    Organisasjonsform = null,
+                    Sektorkode = null,
+                    Naeringskoder = null,
+                    Postadresse = null,
+                    Forretningsadresse = null,
+                    Beliggenhetsadresse = null,
+                    Overenheter = new Enhet[] { },
+                    Underenheter = new Enhet[] { },
+                    Frivillig =
+                        new Frivillig
+                        {
+                            Kategorier =
+                                new[] {
+                                    new KodeListe { Kode = frivillig["kategori1"], Beskrivelse = frivillig["kategori1_tekst"] },
+                                    new KodeListe { Kode = frivillig["kategori2"], Beskrivelse = frivillig["kategori2_tekst"] },
+                                    new KodeListe { Kode = frivillig["kategori3"], Beskrivelse = frivillig["kategori3_tekst"] }
+                                }.Where(n => !String.IsNullOrEmpty(n.Kode)),
+                        },
+                    Stotte = new Stotte[] { }
+                }
+            );
+
+            AddMap<Stotteregisteret>(stottereg =>
+                from s in stottereg
+                let stotte = (IDictionary<string, string>)(object)s
+                select new Enhet
+                {
+                    Organisasjonsnummer = stotte["stottemottakerOrganisasjonsnummer"],
+                    Navn = null,
+                    Organisasjonsform = null,
+                    Sektorkode = null,
+                    Naeringskoder = null,
+                    Postadresse = null,
+                    Forretningsadresse = null,
+                    Beliggenhetsadresse = null,
+                    Overenheter = new Enhet[] { },
+                    Underenheter = new Enhet[] { },
+                    Frivillig = null,
+                    Stotte = new[] {
+                        new Stotte {
+                            Tildelingsdato = DateTime.ParseExact(stotte["tildelingsdato"], "dd.MM.yyyy", null),
+                            Belop = new[] {
+                                Decimal.Parse(stotte["belopFra"] ?? stotte["tildeltBelop"]),
+                                Decimal.Parse(stotte["belopTil"] ?? stotte["tildeltBelop"]),
+                            }.Distinct(),
+                            Valuta = stotte["valuta"],
+                            Navn = stotte["navnStotteordning"],
+                            Formaal = stotte["formaal"],
+                            Instrument = stotte["stotteinstrument"],
+                            Spesifisert = new[] {
+                                new Enhet {
+                                    Organisasjonsnummer = stotte["spesifisertStottemottakerOrganisasjonsnummer"],
+                                    Navn = stotte["spesifisertStottemottakerNavn"] ?? stotte["spesifisertStottemottakerUtenOrganisasjonsnummer"]
+                                },
+                            }.FirstOrDefault(s => !String.IsNullOrEmpty(s.Navn)),
+                            Giver =
+                                new Enhet
+                                {
+                                    Organisasjonsnummer = stotte["stottegiverOrganisasjonsnummer"],
+                                    Navn = stotte["stottegiverNavn"]
+                                }
+                            }
+                    }
                 }
             );
 
@@ -165,7 +266,9 @@ namespace Enhetsregisteret
                     Forretningsadresse = g.Select(enhet => enhet.Forretningsadresse).FirstOrDefault(adresse => adresse != null),
                     Beliggenhetsadresse = g.Select(enhet => enhet.Beliggenhetsadresse).FirstOrDefault(adresse => adresse != null),
                     Overenheter = g.SelectMany(enhet => enhet.Overenheter),
-                    Underenheter = g.SelectMany(enhet => enhet.Underenheter)
+                    Underenheter = g.SelectMany(enhet => enhet.Underenheter),
+                    Frivillig = g.Select(enhet => enhet.Frivillig).FirstOrDefault(frivillig => frivillig != null),
+                    Stotte = g.SelectMany(enhet => enhet.Stotte)
                 };
 
             //OutputReduceToCollection = "Enhet";
