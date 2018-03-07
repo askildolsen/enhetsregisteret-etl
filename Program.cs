@@ -5,6 +5,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Xml;
+using System.Xml.Linq;
 using Raven.Client.Documents.BulkInsert;
 using Raven.Client.Json;
 
@@ -50,6 +52,18 @@ namespace enhetsregisteret_etl
                         frivillig,
                         "Frivillighetsregisteret/" + frivillig.orgnr,
                         new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Frivillighetsregisteret"}})
+                    );
+                }
+            }
+
+            using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
+            {
+                foreach (dynamic stotte in Xml.ExpandoStream(WebRequest.Create("https://data.brreg.no/rofs/od/rofs/stottetildeling/nob")))
+                {
+                    bulkInsert.Store(
+                        stotte,
+                        "Stotteregisteret/" + stotte.tildelingId,
+                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Stotteregisteret"}})
                     );
                 }
             }
