@@ -75,45 +75,49 @@ namespace Enhetsregisteret
                             Kode = enhet["orgform.kode"],
                             Beskrivelse = enhet["orgform.beskrivelse"]
                         },
-                   Sektorkode = (String.IsNullOrEmpty(enhet["institusjonellSektorkode.kode"])) ? null :
-                        new KodeListe
-                        {
-                            Kode = enhet["institusjonellSektorkode.kode"],
-                            Beskrivelse = enhet["institusjonellSektorkode.beskrivelse"]
-                        },
+                    Sektorkode =
+                        new [] {
+                            new KodeListe { Kode = enhet["institusjonellSektorkode.kode"], Beskrivelse = enhet["institusjonellSektorkode.beskrivelse"] }
+                        }.FirstOrDefault(s => !String.IsNullOrEmpty(s.Kode)),
                     Naeringskoder =
                         new[] {
                             new KodeListe { Kode = enhet["naeringskode1.kode"], Beskrivelse = enhet["naeringskode1.beskrivelse"] },
                             new KodeListe { Kode = enhet["naeringskode2.kode"], Beskrivelse = enhet["naeringskode2.beskrivelse"] },
                             new KodeListe { Kode = enhet["naeringskode3.kode"], Beskrivelse = enhet["naeringskode3.beskrivelse"] }
                         }.Where(n => !String.IsNullOrEmpty(n.Kode)),
-                    Postadresse = (String.IsNullOrEmpty(enhet["postadresse.landkode"])) ? null :
-                        new GeografiskAdresse
-                        {
-                            Adresse = enhet["postadresse.adresse"],
-                            Postnummer = enhet["postadresse.postnummer"],
-                            PostSted = enhet["postadresse.poststed"],
-                            Kommune = new KodeListe { Kode = enhet["postadresse.kommunenummer"], Beskrivelse = enhet["postadresse.kommune"] },
-                            Land = new KodeListe { Kode = enhet["postadresse.landkode"], Beskrivelse = enhet["postadresse.land"] }
-                        },
-                    Forretningsadresse = (String.IsNullOrEmpty(enhet["forretningsadresse.landkode"])) ? null :
-                        new GeografiskAdresse
-                        {
-                            Adresse = enhet["forretningsadresse.adresse"],
-                            Postnummer = enhet["forretningsadresse.postnummer"],
-                            PostSted = enhet["forretningsadresse.poststed"],
-                            Kommune = new KodeListe { Kode = enhet["forretningsadresse.kommunenummer"], Beskrivelse = enhet["forretningsadresse.kommune"] },
-                            Land = new KodeListe { Kode = enhet["forretningsadresse.landkode"], Beskrivelse = enhet["forretningsadresse.land"] }
-                        },
-                    Beliggenhetsadresse = (String.IsNullOrEmpty(enhet["beliggenhetsadresse.landkode"])) ? null :
-                        new GeografiskAdresse
-                        {
-                            Adresse = enhet["beliggenhetsadresse.adresse"],
-                            Postnummer = enhet["beliggenhetsadresse.postnummer"],
-                            PostSted = enhet["beliggenhetsadresse.poststed"],
-                            Kommune = new KodeListe { Kode = enhet["beliggenhetsadresse.kommunenummer"], Beskrivelse = enhet["beliggenhetsadresse.kommune"] },
-                            Land = new KodeListe { Kode = enhet["beliggenhetsadresse.landkode"], Beskrivelse = enhet["beliggenhetsadresse.land"] }
-                        },
+                    Postadresse = 
+                        new[] {
+                            new GeografiskAdresse
+                            {
+                                Adresse = enhet["postadresse.adresse"],
+                                Postnummer = enhet["postadresse.postnummer"],
+                                PostSted = enhet["postadresse.poststed"],
+                                Kommune = new KodeListe { Kode = enhet["postadresse.kommunenummer"], Beskrivelse = enhet["postadresse.kommune"] },
+                                Land = new KodeListe { Kode = enhet["postadresse.landkode"], Beskrivelse = enhet["postadresse.land"] }
+                            }
+                        }.FirstOrDefault(a => !String.IsNullOrEmpty(a.Land.Kode)),
+                    Forretningsadresse =
+                        new[] {
+                            new GeografiskAdresse
+                            {
+                                Adresse = enhet["forretningsadresse.adresse"],
+                                Postnummer = enhet["forretningsadresse.postnummer"],
+                                PostSted = enhet["forretningsadresse.poststed"],
+                                Kommune = new KodeListe { Kode = enhet["forretningsadresse.kommunenummer"], Beskrivelse = enhet["forretningsadresse.kommune"] },
+                                Land = new KodeListe { Kode = enhet["forretningsadresse.landkode"], Beskrivelse = enhet["forretningsadresse.land"] }
+                            }
+                        }.FirstOrDefault(a => !String.IsNullOrEmpty(a.Land.Kode)),
+                    Beliggenhetsadresse =
+                        new[] {
+                            new GeografiskAdresse
+                            {
+                                Adresse = enhet["beliggenhetsadresse.adresse"],
+                                Postnummer = enhet["beliggenhetsadresse.postnummer"],
+                                PostSted = enhet["beliggenhetsadresse.poststed"],
+                                Kommune = new KodeListe { Kode = enhet["beliggenhetsadresse.kommunenummer"], Beskrivelse = enhet["beliggenhetsadresse.kommune"] },
+                                Land = new KodeListe { Kode = enhet["beliggenhetsadresse.landkode"], Beskrivelse = enhet["beliggenhetsadresse.land"] }
+                            }
+                        }.FirstOrDefault(a => !String.IsNullOrEmpty(a.Land.Kode)),
                     Overenheter = new Enhet[] { },
                     Underenheter = new Enhet[] { },
                     Frivillig = null,
@@ -227,20 +231,22 @@ namespace Enhetsregisteret
                     Stotte = new[] {
                         new Stotte {
                             Tildelingsdato = DateTime.ParseExact(stotte["tildelingsdato"], "dd.MM.yyyy", null),
-                            Belop = new[] {
-                                Decimal.Parse(stotte["belopFra"] ?? stotte["tildeltBelop"]),
-                                Decimal.Parse(stotte["belopTil"] ?? stotte["tildeltBelop"]),
-                            }.Distinct(),
+                            Belop =
+                                new[] {
+                                    Decimal.Parse(stotte["belopFra"] ?? stotte["tildeltBelop"]),
+                                    Decimal.Parse(stotte["belopTil"] ?? stotte["tildeltBelop"]),
+                                }.Distinct(),
                             Valuta = stotte["valuta"],
                             Navn = stotte["navnStotteordning"],
                             Formaal = stotte["formaal"],
                             Instrument = stotte["stotteinstrument"],
-                            Spesifisert = new[] {
-                                new Enhet {
-                                    Organisasjonsnummer = stotte["spesifisertStottemottakerOrganisasjonsnummer"],
-                                    Navn = stotte["spesifisertStottemottakerNavn"] ?? stotte["spesifisertStottemottakerUtenOrganisasjonsnummer"]
-                                },
-                            }.FirstOrDefault(s => !String.IsNullOrEmpty(s.Navn)),
+                            Spesifisert =
+                                new[] {
+                                    new Enhet {
+                                        Organisasjonsnummer = stotte["spesifisertStottemottakerOrganisasjonsnummer"],
+                                        Navn = stotte["spesifisertStottemottakerNavn"] ?? stotte["spesifisertStottemottakerUtenOrganisasjonsnummer"]
+                                    },
+                                }.FirstOrDefault(s => !String.IsNullOrEmpty(s.Navn)),
                             Giver =
                                 new Enhet
                                 {
