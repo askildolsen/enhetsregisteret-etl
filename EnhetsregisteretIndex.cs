@@ -19,6 +19,7 @@ namespace Enhetsregisteret
             public KodeListe Organisasjonsform { get; set; }
             public KodeListe Sektorkode { get; set; }
             public IEnumerable<KodeListe> Naeringskoder { get; set; }
+            public IEnumerable<KodeListe> Statuser { get; set; }
             public GeografiskAdresse Postadresse { get; set; }
             public GeografiskAdresse Forretningsadresse { get; set; }
             public GeografiskAdresse Beliggenhetsadresse { get; set; }
@@ -85,6 +86,10 @@ namespace Enhetsregisteret
                             new KodeListe { Kode = enhet["naeringskode2.kode"], Beskrivelse = enhet["naeringskode2.beskrivelse"] },
                             new KodeListe { Kode = enhet["naeringskode3.kode"], Beskrivelse = enhet["naeringskode3.beskrivelse"] }
                         }.Where(n => !String.IsNullOrEmpty(n.Kode)),
+                    Statuser = 
+                        from status in new[] { "konkurs", "underAvvikling", "underTvangsavviklingEllerTvangsopplosning" }
+                        where enhet[status] == "J"
+                        select new KodeListe { Kode = status },
                     Postadresse = 
                         new[] {
                             new GeografiskAdresse
@@ -136,6 +141,7 @@ namespace Enhetsregisteret
                     Organisasjonsform = null,
                     Sektorkode = null,
                     Naeringskoder = null,
+                    Statuser = new KodeListe[] { },
                     Postadresse = null,
                     Forretningsadresse = null,
                     Beliggenhetsadresse = null,
@@ -167,6 +173,7 @@ namespace Enhetsregisteret
                     Organisasjonsform = null,
                     Sektorkode = null,
                     Naeringskoder = null,
+                    Statuser = new KodeListe[] { },
                     Postadresse = null,
                     Forretningsadresse = null,
                     Beliggenhetsadresse = null,
@@ -193,6 +200,7 @@ namespace Enhetsregisteret
                     Organisasjonsform = null,
                     Sektorkode = null,
                     Naeringskoder = null,
+                    Statuser = new KodeListe[] { },
                     Postadresse = null,
                     Forretningsadresse = null,
                     Beliggenhetsadresse = null,
@@ -222,6 +230,7 @@ namespace Enhetsregisteret
                     Organisasjonsform = null,
                     Sektorkode = null,
                     Naeringskoder = null,
+                    Statuser = new KodeListe[] { },
                     Postadresse = null,
                     Forretningsadresse = null,
                     Beliggenhetsadresse = null,
@@ -268,6 +277,7 @@ namespace Enhetsregisteret
                     Organisasjonsform = g.Select(enhet => enhet.Organisasjonsform).FirstOrDefault(organisasjonsform => organisasjonsform != null),
                     Sektorkode = g.Select(enhet => enhet.Sektorkode).FirstOrDefault(sektorkode => sektorkode != null),
                     Naeringskoder = g.Select(enhet => enhet.Naeringskoder).FirstOrDefault(naeringskoder => naeringskoder != null),
+                    Statuser = g.SelectMany(enhet => enhet.Statuser),
                     Postadresse = g.Select(enhet => enhet.Postadresse).FirstOrDefault(adresse => adresse != null),
                     Forretningsadresse = g.Select(enhet => enhet.Forretningsadresse).FirstOrDefault(adresse => adresse != null),
                     Beliggenhetsadresse = g.Select(enhet => enhet.Beliggenhetsadresse).FirstOrDefault(adresse => adresse != null),
