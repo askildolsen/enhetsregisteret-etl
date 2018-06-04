@@ -17,6 +17,7 @@ namespace enhetsregisteret_etl
         static void Main(string[] args)
         {
             new Enhetsregisteret.EnhetsregisteretIndex().Execute(DocumentStoreHolder.Store);
+            new Enhetsregisteret.EnhetsRegisteretResourceModel.EnhetsregisteretResourceIndex().Execute(DocumentStoreHolder.Store);
 
             using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
             {
