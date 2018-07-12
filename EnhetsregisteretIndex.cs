@@ -8,9 +8,9 @@ namespace Enhetsregisteret
 {
     public class EnhetsregisteretIndex : AbstractMultiMapIndexCreationTask<EnhetsregisteretIndex.Enhet>
     {
-        public class Enhetsregisteret { }
-        public class Frivillighetsregisteret { }
-        public class Stotteregisteret { }
+        public class Enhetsregisteret : Dictionary<string, string> { }
+        public class Frivillighetsregisteret : Dictionary<string, string> { }
+        public class Stotteregisteret : Dictionary<string, string> { }
 
         public class Enhet
         {
@@ -64,8 +64,7 @@ namespace Enhetsregisteret
         public EnhetsregisteretIndex()
         {
             AddMap<Enhetsregisteret>(enheter =>
-                from e in enheter
-                let enhet = (IDictionary<string, string>)(object)e
+                from enhet in enheter
                 select new Enhet
                 {
                     Organisasjonsnummer = enhet["organisasjonsnummer"],
@@ -131,8 +130,7 @@ namespace Enhetsregisteret
             );
 
             AddMap<Enhetsregisteret>(enheter =>
-                from e in enheter
-                let enhet = (IDictionary<string, string>)(object)e
+                from enhet in enheter
                 where enhet.ContainsKey("overordnetEnhet")
                 select new Enhet
                 {
@@ -163,8 +161,7 @@ namespace Enhetsregisteret
             );
 
             AddMap<Enhetsregisteret>(enheter =>
-                from ue in enheter
-                let underenhet = (IDictionary<string, string>)(object)ue
+                from underenhet in enheter
                 where !String.IsNullOrEmpty(underenhet["overordnetEnhet"])
                 select new Enhet
                 {
@@ -191,8 +188,7 @@ namespace Enhetsregisteret
             );
 
             AddMap<Frivillighetsregisteret>(frivilligreg =>
-                from f in frivilligreg
-                let frivillig = (IDictionary<string, string>)(object)f
+                from frivillig in frivilligreg
                 select new Enhet
                 {
                     Organisasjonsnummer = frivillig["orgnr"],
@@ -221,8 +217,7 @@ namespace Enhetsregisteret
             );
 
             AddMap<Stotteregisteret>(stottereg =>
-                from s in stottereg
-                let stotte = (IDictionary<string, string>)(object)s
+                from stotte in stottereg
                 select new Enhet
                 {
                     Organisasjonsnummer = stotte["stottemottakerOrganisasjonsnummer"],

@@ -8,9 +8,9 @@ namespace Enhetsregisteret
 {
     public class EnhetsRegisteretResourceModel
     {
-        public class Enhetsregisteret { }
-        public class Frivillighetsregisteret { }
-        public class Stotteregisteret { }
+        public class Enhetsregisteret : Dictionary<string, string> { }
+        public class Frivillighetsregisteret : Dictionary<string, string> { }
+        public class Stotteregisteret : Dictionary<string, string> { }
 
         public class Resource
         {
@@ -40,8 +40,7 @@ namespace Enhetsregisteret
             public EnhetsregisteretResourceIndex()
             {
                 AddMap<Enhetsregisteret>(enheter =>
-                    from e in enheter
-                    let enhet = (IDictionary<string, string>)(object)e
+                    from enhet in enheter
                     select new Resource
                     {
                         ResourceId =  enhet["organisasjonsnummer"],
