@@ -286,8 +286,6 @@ namespace Enhetsregisteret
                     Frivillig = g.Select(enhet => enhet.Frivillig).FirstOrDefault(frivillig => frivillig != null),
                     Stotte = g.SelectMany(enhet => enhet.Stotte)
                 };
-
-            //OutputReduceToCollection = "Enhet";
         }
     }
 }
