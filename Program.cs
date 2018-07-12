@@ -23,12 +23,12 @@ namespace enhetsregisteret_etl
             {
                 foreach (dynamic enhet in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter")))
                 {
-                    Console.WriteLine(enhet.navn);
+                    Console.Write(enhet.organisasjonsnummer + " ");
                     bulkInsert.Store(
                         enhet,
                         "Enhetsregisteret/" + enhet.organisasjonsnummer,
                         new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
-                    );               
+                    );
                 }
             }
 
@@ -36,12 +36,12 @@ namespace enhetsregisteret_etl
             {
                 foreach (dynamic underenhet in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/underenheter")))
                 {
-                    Console.WriteLine(underenhet.navn);
+                    Console.Write(underenhet.organisasjonsnummer + " ");
                     bulkInsert.Store(
                         underenhet,
                         "Enhetsregisteret/" + underenhet.organisasjonsnummer,
                         new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
-                    );                  
+                    );
                 }
             }
 
