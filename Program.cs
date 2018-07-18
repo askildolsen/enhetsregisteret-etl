@@ -9,6 +9,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Raven.Client.Documents.BulkInsert;
 using Raven.Client.Json;
+using static MoreLinq.Extensions.BatchExtension;
 
 namespace enhetsregisteret_etl
 {
@@ -19,29 +20,35 @@ namespace enhetsregisteret_etl
             new Enhetsregisteret.EnhetsregisteretIndex().Execute(DocumentStoreHolder.Store);
             new Enhetsregisteret.EnhetsRegisteretResourceModel.EnhetsregisteretResourceIndex().Execute(DocumentStoreHolder.Store);
 
-            using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
+            foreach (var batch in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter")).Batch(10000))
             {
-                foreach (dynamic enhet in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter")))
+                using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
                 {
-                    Console.Write(enhet.organisasjonsnummer + " ");
-                    bulkInsert.Store(
-                        enhet,
-                        "Enhetsregisteret/" + enhet.organisasjonsnummer,
-                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
-                    );
+                    foreach (dynamic enhet in batch)
+                    {
+                        Console.Write(enhet.organisasjonsnummer + " ");
+                        bulkInsert.Store(
+                            enhet,
+                            "Enhetsregisteret/" + enhet.organisasjonsnummer,
+                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
+                        );
+                    }
                 }
             }
 
-            using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
+            foreach (var batch in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/underenheter")).Batch(10000))
             {
-                foreach (dynamic underenhet in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/underenheter")))
+                using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
                 {
-                    Console.Write(underenhet.organisasjonsnummer + " ");
-                    bulkInsert.Store(
-                        underenhet,
-                        "Enhetsregisteret/" + underenhet.organisasjonsnummer,
-                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
-                    );
+                    foreach (dynamic underenhet in batch)
+                    {
+                        Console.Write(underenhet.organisasjonsnummer + " ");
+                        bulkInsert.Store(
+                            underenhet,
+                            "Enhetsregisteret/" + underenhet.organisasjonsnummer,
+                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
+                        );
+                    }
                 }
             }
 
