@@ -99,6 +99,46 @@ namespace Enhetsregisteret
                     }
                 );
 
+                AddMap<Frivillighetsregisteret>(frivilligreg =>
+                    from frivillig in frivilligreg
+                    select new Resource
+                    {
+                        ResourceId =  frivillig["orgnr"],
+                        Type = new string[] { },
+                        SubType = new string[] { },
+                        Title = new string[] { },
+                        Code =  new string[] { },
+                        Status = new string[] { "frivillig" },
+                        Tags =
+                            new[] {
+                                frivillig["kategori1"] + "|" + frivillig["kategori1_tekst"],
+                                frivillig["kategori2"] + "|" + frivillig["kategori2_tekst"],
+                                frivillig["kategori3"] + "|" + frivillig["kategori3_tekst"]
+                            }.Where(s => !String.IsNullOrEmpty(s)),
+                        Properties = new Property[] { }
+                    }
+                );
+
+                AddMap<Stotteregisteret>(stottereg =>
+                    from stotte in stottereg
+                    select new Resource
+                    {
+                        ResourceId = stotte["stottemottakerOrganisasjonsnummer"],
+                        Type = new string[] { },
+                        SubType = new string[] { },
+                        Title = new string[] { },
+                        Code =  new string[] { },
+                        Status = new string[] { "stottemottaker" },
+                        Tags =
+                            new[] {
+                                stotte["navnStotteordning"],
+                                stotte["formaal"],
+                                stotte["stotteinstrument"]
+                            }.Where(s => !String.IsNullOrEmpty(s)),
+                        Properties = new Property[] { }
+                    }
+                );
+
                 Reduce = results  =>
                     from result in results
                     group result by result.ResourceId into g
