@@ -145,12 +145,12 @@ namespace Enhetsregisteret
                     select new Resource
                     {
                         ResourceId = g.Key,
-                        Type = g.SelectMany(resource => resource.Type),
-                        SubType = g.SelectMany(resource => resource.SubType),
-                        Title = g.SelectMany(resource => resource.Title),
-                        Code = g.SelectMany(resource => resource.Code),
-                        Status = g.SelectMany(resource => resource.Status),
-                        Tags = g.SelectMany(resource => resource.Tags),
+                        Type = g.SelectMany(resource => resource.Type).Distinct(),
+                        SubType = g.SelectMany(resource => resource.SubType).Distinct(),
+                        Title = g.SelectMany(resource => resource.Title).Distinct(),
+                        Code = g.SelectMany(resource => resource.Code).Distinct(),
+                        Status = g.SelectMany(resource => resource.Status).Distinct(),
+                        Tags = g.SelectMany(resource => resource.Tags).Distinct(),
                         Properties = g.SelectMany(resource => resource.Properties)
                     };
 
