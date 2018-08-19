@@ -18,7 +18,7 @@ namespace enhetsregisteret_etl
 {
     class Program
     {
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var sw = Stopwatch.StartNew();
 
@@ -31,7 +31,7 @@ namespace enhetsregisteret_etl
                 {
                     foreach (dynamic enhet in batch)
                     {
-                        bulkInsert.Store(
+                        await bulkInsert.StoreAsync(
                             enhet,
                             "Enhetsregisteret/" + enhet.organisasjonsnummer,
                             new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
@@ -49,7 +49,7 @@ namespace enhetsregisteret_etl
                 {
                     foreach (dynamic underenhet in batch)
                     {
-                        bulkInsert.Store(
+                        await bulkInsert.StoreAsync(
                             underenhet,
                             "Enhetsregisteret/" + underenhet.organisasjonsnummer,
                             new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
@@ -65,7 +65,7 @@ namespace enhetsregisteret_etl
             {
                 foreach (dynamic frivillig in Csv.ExpandoStream(WebRequest.Create("http://hotell.difi.no/download/brreg/frivillighetsregisteret")))
                 {
-                    bulkInsert.Store(
+                    await bulkInsert.StoreAsync(
                         frivillig,
                         "Frivillighetsregisteret/" + frivillig.orgnr,
                         new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Frivillighetsregisteret"}})
@@ -79,7 +79,7 @@ namespace enhetsregisteret_etl
             {
                 foreach (dynamic stotte in Xml.ExpandoStream(WebRequest.Create("https://data.brreg.no/rofs/od/rofs/stottetildeling/nob")))
                 {
-                    bulkInsert.Store(
+                    await bulkInsert.StoreAsync(
                         stotte,
                         "Stotteregisteret/" + stotte.tildelingId,
                         new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Stotteregisteret"}})
