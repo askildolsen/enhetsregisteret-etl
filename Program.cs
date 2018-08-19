@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using Raven.Client.Documents;
 using Raven.Client.Documents.BulkInsert;
 using Raven.Client.Json;
 using static MoreLinq.Extensions.BatchExtension;
@@ -17,6 +20,8 @@ namespace enhetsregisteret_etl
     {
         static void Main(string[] args)
         {
+            var sw = Stopwatch.StartNew();
+
             new Enhetsregisteret.EnhetsregisteretIndex().Execute(DocumentStoreHolder.Store);
             new Enhetsregisteret.EnhetsRegisteretResourceModel.EnhetsregisteretResourceIndex().Execute(DocumentStoreHolder.Store);
 
@@ -26,7 +31,6 @@ namespace enhetsregisteret_etl
                 {
                     foreach (dynamic enhet in batch)
                     {
-                        Console.Write(enhet.organisasjonsnummer + " ");
                         bulkInsert.Store(
                             enhet,
                             "Enhetsregisteret/" + enhet.organisasjonsnummer,
@@ -34,7 +38,10 @@ namespace enhetsregisteret_etl
                         );
                     }
                 }
+                Console.Write(".");
             }
+
+            Console.WriteLine(" Enheter: {0}", sw.Elapsed);
 
             foreach (var batch in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/underenheter")).Batch(10000))
             {
@@ -42,7 +49,6 @@ namespace enhetsregisteret_etl
                 {
                     foreach (dynamic underenhet in batch)
                     {
-                        Console.Write(underenhet.organisasjonsnummer + " ");
                         bulkInsert.Store(
                             underenhet,
                             "Enhetsregisteret/" + underenhet.organisasjonsnummer,
@@ -50,7 +56,10 @@ namespace enhetsregisteret_etl
                         );
                     }
                 }
+                Console.Write(".");
             }
+
+            Console.WriteLine(" Underenheter: {0}", sw.Elapsed);
 
             using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
             {
@@ -64,6 +73,8 @@ namespace enhetsregisteret_etl
                 }
             }
 
+            Console.WriteLine(". Frivillighetsregisteret: {0}", sw.Elapsed);
+
             using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
             {
                 foreach (dynamic stotte in Xml.ExpandoStream(WebRequest.Create("https://data.brreg.no/rofs/od/rofs/stottetildeling/nob")))
@@ -75,6 +86,8 @@ namespace enhetsregisteret_etl
                     );
                 }
             }
+
+            Console.WriteLine(". Stotteregisteret: {0}", sw.Elapsed);
         }
     }
 }
