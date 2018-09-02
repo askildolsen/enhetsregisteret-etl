@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -22,7 +22,6 @@ namespace enhetsregisteret_etl
         {
             var sw = Stopwatch.StartNew();
 
-            new Enhetsregisteret.EnhetsregisteretIndex().Execute(DocumentStoreHolder.Store);
             new Enhetsregisteret.EnhetsRegisteretResourceModel.EnhetsregisteretResourceIndex().Execute(DocumentStoreHolder.Store);
 
             foreach (var batch in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter")).Batch(10000))
