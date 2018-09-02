@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using System.Xml;
 using System.Xml.Linq;
 using Raven.Client.Documents;
@@ -24,39 +25,33 @@ namespace enhetsregisteret_etl
 
             new Enhetsregisteret.EnhetsRegisteretResourceModel.EnhetsregisteretResourceIndex().Execute(DocumentStoreHolder.Store);
 
-            foreach (var batch in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter")).Batch(10000))
-            {
-                using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
-                {
-                    foreach (dynamic enhet in batch)
-                    {
-                        await bulkInsert.StoreAsync(
-                            enhet,
-                            "Enhetsregisteret/" + enhet.organisasjonsnummer,
-                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
-                        );
-                    }
-                }
-                Console.Write(".");
-            }
+            Func<dynamic, dynamic> enhetmap = e => new {
+                    entity = e,
+                    id = "Enhetsregisteret/" + e.organisasjonsnummer,
+                    meta = new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
+            };
+
+            var enhetbuffer = new BufferBlock<IEnumerable<ExpandoObject>>(new DataflowBlockOptions { BoundedCapacity = 2 });
+
+            Func<IEnumerable<ExpandoObject>> enheter = () =>
+                Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter"));
+
+            var enhetproducer = ProduceAsync(enhetbuffer, enheter);
+            var enhetconsumer = ConsumeAsync(enhetbuffer, enhetmap);
+
+            await Task.WhenAll(enhetproducer, enhetconsumer, enhetbuffer.Completion);
 
             Console.WriteLine(" Enheter: {0}", sw.Elapsed);
 
-            foreach (var batch in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/underenheter")).Batch(10000))
-            {
-                using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
-                {
-                    foreach (dynamic underenhet in batch)
-                    {
-                        await bulkInsert.StoreAsync(
-                            underenhet,
-                            "Enhetsregisteret/" + underenhet.organisasjonsnummer,
-                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
-                        );
-                    }
-                }
-                Console.Write(".");
-            }
+            var underenhetbuffer = new BufferBlock<IEnumerable<ExpandoObject>>(new DataflowBlockOptions { BoundedCapacity = 2 });
+
+            Func<IEnumerable<ExpandoObject>> underenheter = () =>
+                Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/underenheter"));
+
+            var underenhetproducer = ProduceAsync(underenhetbuffer, underenheter);
+            var underenhetconsumer = ConsumeAsync(underenhetbuffer, enhetmap);
+
+            await Task.WhenAll(underenhetproducer, underenhetconsumer, underenhetbuffer.Completion);
 
             Console.WriteLine(" Underenheter: {0}", sw.Elapsed);
 
@@ -87,6 +82,41 @@ namespace enhetsregisteret_etl
             }
 
             Console.WriteLine(". Stotteregisteret: {0}", sw.Elapsed);
+        }
+
+        static async Task ProduceAsync(BufferBlock<IEnumerable<ExpandoObject>> queue, Func<IEnumerable<ExpandoObject>> produce)
+        {
+            foreach (var batch in produce().Batch(10000))
+            {
+                await queue.SendAsync(batch);
+                Console.Write("+");
+            }
+
+            queue.Complete();
+        }
+
+        static async Task ConsumeAsync(IReceivableSourceBlock<IEnumerable<ExpandoObject>> source, Func<dynamic, dynamic> map)
+        {
+            while (await source.OutputAvailableAsync())
+            {
+                IEnumerable<ExpandoObject> batch;
+                
+                while(source.TryReceive(out batch))
+                {
+                    using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
+                    {
+                        foreach (dynamic e in batch.Select(e => map(e)))
+                        {
+                            await bulkInsert.StoreAsync(
+                                e.entity,
+                                e.id,
+                                e.meta
+                            );
+                        }
+                    }
+                    Console.Write("-");
+                }
+            }
         }
     }
 }
