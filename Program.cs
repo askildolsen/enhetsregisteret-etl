@@ -31,29 +31,21 @@ namespace enhetsregisteret_etl
                     meta = new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
             };
 
-            var enhetbuffer = new BufferBlock<IEnumerable<ExpandoObject>>(new DataflowBlockOptions { BoundedCapacity = 2 });
+            var buffer = new BufferBlock<IEnumerable<ExpandoObject>>(new DataflowBlockOptions { BoundedCapacity = 2 });
 
-            Func<IEnumerable<ExpandoObject>> enheter = () =>
-                Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter"));
+            var consumer1 = ConsumeAsync(buffer, enhetmap);
+            var consumer2 = ConsumeAsync(buffer, enhetmap);
 
-            var enhetproducer = ProduceAsync(enhetbuffer, enheter);
-            var enhetconsumer = ConsumeAsync(enhetbuffer, enhetmap);
+            await Task.WhenAll(
+                ProduceAsync(buffer, () => Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/enheter"))),
+                ProduceAsync(buffer, () => Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/underenheter")))
+            );
 
-            await Task.WhenAll(enhetproducer, enhetconsumer, enhetbuffer.Completion);
+            buffer.Complete();
+
+            await Task.WhenAll(consumer1, consumer2);
 
             Console.WriteLine(" Enheter: {0}", sw.Elapsed);
-
-            var underenhetbuffer = new BufferBlock<IEnumerable<ExpandoObject>>(new DataflowBlockOptions { BoundedCapacity = 2 });
-
-            Func<IEnumerable<ExpandoObject>> underenheter = () =>
-                Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/underenheter"));
-
-            var underenhetproducer = ProduceAsync(underenhetbuffer, underenheter);
-            var underenhetconsumer = ConsumeAsync(underenhetbuffer, enhetmap);
-
-            await Task.WhenAll(underenhetproducer, underenhetconsumer, underenhetbuffer.Completion);
-
-            Console.WriteLine(" Underenheter: {0}", sw.Elapsed);
 
             using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
             {
@@ -86,13 +78,22 @@ namespace enhetsregisteret_etl
 
         static async Task ProduceAsync(BufferBlock<IEnumerable<ExpandoObject>> queue, Func<IEnumerable<ExpandoObject>> produce)
         {
-            foreach (var batch in produce().Batch(10000))
+            try
             {
-                await queue.SendAsync(batch);
-                Console.Write("+");
+                foreach (var batch in produce().Batch(10000))
+                {
+                    await queue.SendAsync(batch);
+                    Console.Write("+");
+                }
             }
-
-            queue.Complete();
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            finally
+            {
+                Console.Write("Produce avslutter");
+            }
         }
 
         static async Task ConsumeAsync(IReceivableSourceBlock<IEnumerable<ExpandoObject>> source, Func<dynamic, dynamic> map)
