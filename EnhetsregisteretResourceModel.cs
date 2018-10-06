@@ -156,6 +156,20 @@ namespace Enhetsregisteret
 
                 OutputReduceToCollection = "EnhetsregisteretResource";
             }
+
+            public override IndexDefinition CreateIndexDefinition()
+            {
+                var indexDefinition = base.CreateIndexDefinition();
+
+                return new IndexDefinition
+                {
+                    Name = indexDefinition.Name,
+                    Maps = indexDefinition.Maps,
+                    Reduce = indexDefinition.Reduce,
+                    OutputReduceToCollection = indexDefinition.OutputReduceToCollection,
+                    Configuration = new IndexConfiguration { { "Indexing.MapTimeoutInSec", "30"} }
+                };
+            }
         }
     }
 }

@@ -17,7 +17,7 @@ namespace enhetsregisteret_etl
         {
             var sw = Stopwatch.StartNew();
 
-            //new Enhetsregisteret.EnhetsRegisteretResourceModel.EnhetsregisteretResourceIndex().Execute(DocumentStoreHolder.Store);
+            new Enhetsregisteret.EnhetsRegisteretResourceModel.EnhetsregisteretResourceIndex().Execute(DocumentStoreHolder.Store);
 
             var bulkInsertEnheter = new ActionBlock<ExpandoObject[]>(batch =>
                 {
