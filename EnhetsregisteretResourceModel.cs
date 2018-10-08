@@ -4,7 +4,7 @@ using System.Linq;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Linq.Indexing;
 
-namespace Enhetsregisteret
+namespace enhetsregisteret_etl
 {
     public class EnhetsRegisteretResourceModel
     {

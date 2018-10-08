@@ -1,22 +1,25 @@
 using System;
 using Raven.Client.Documents;
 
-public class DocumentStoreHolder
+namespace enhetsregisteret_etl
 {
-	private static Lazy<IDocumentStore> store = new Lazy<IDocumentStore>(CreateStore);
-
-	public static IDocumentStore Store => store.Value;
-
-    private static IDocumentStore CreateStore()
+	public class DocumentStoreHolder
 	{
-		IDocumentStore store = new DocumentStore()
+		private static Lazy<IDocumentStore> store = new Lazy<IDocumentStore>(CreateStore);
+
+		public static IDocumentStore Store => store.Value;
+
+		private static IDocumentStore CreateStore()
 		{
-		    Urls = new[] { "http://localhost:8080" },
-			Database = "Digitalisert",
-		};
+			IDocumentStore store = new DocumentStore()
+			{
+				Urls = new[] { "http://localhost:8080" },
+				Database = "Digitalisert",
+			};
 
-		store.Conventions.FindCollectionName = t => t.Name;
+			store.Conventions.FindCollectionName = t => t.Name;
 
-		return store.Initialize();
+			return store.Initialize();
+		}
 	}
 }
