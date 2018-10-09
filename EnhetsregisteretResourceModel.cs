@@ -6,11 +6,9 @@ using Raven.Client.Documents.Linq.Indexing;
 
 namespace enhetsregisteret_etl
 {
-    public class EnhetsRegisteretResourceModel
+    public class EnheterResourceModel
     {
-        public class Enhetsregisteret : Dictionary<string, string> { }
-        public class Frivillighetsregisteret : Dictionary<string, string> { }
-        public class Stotteregisteret : Dictionary<string, string> { }
+        public class Enheter : Dictionary<string, string> { }
 
         public class Resource
         {
@@ -35,12 +33,14 @@ namespace enhetsregisteret_etl
             public IEnumerable<Property> Properties { get; set; }
         }
 
-        public class EnhetsregisteretResourceIndex : AbstractMultiMapIndexCreationTask<Resource>
+        public class EnheterResourceIndex : AbstractMultiMapIndexCreationTask<Resource>
         {
-            public EnhetsregisteretResourceIndex()
+            public EnheterResourceIndex()
             {
-                AddMap<Enhetsregisteret>(enheter =>
+                AddMap<Enheter>(enheter =>
                     from enhet in enheter
+                    let metadata = MetadataFor(enhet)
+                    where metadata.Value<string>("@id").StartsWith("Enhetsregisteret")
                     select new Resource
                     {
                         ResourceId =  enhet["organisasjonsnummer"],
@@ -99,8 +99,10 @@ namespace enhetsregisteret_etl
                     }
                 );
 
-                AddMap<Frivillighetsregisteret>(frivilligreg =>
-                    from frivillig in frivilligreg
+                AddMap<Enheter>(enheter =>
+                    from frivillig in enheter
+                    let metadata = MetadataFor(frivillig)
+                    where metadata.Value<string>("@id").StartsWith("Frivillighetsregisteret")
                     select new Resource
                     {
                         ResourceId =  frivillig["orgnr"],
@@ -119,8 +121,10 @@ namespace enhetsregisteret_etl
                     }
                 );
 
-                AddMap<Stotteregisteret>(stottereg =>
-                    from stotte in stottereg
+                AddMap<Enheter>(enheter =>
+                    from stotte in enheter
+                    let metadata = MetadataFor(stotte)
+                    where metadata.Value<string>("@id").StartsWith("Stotteregisteret")
                     select new Resource
                     {
                         ResourceId = stotte["stottemottakerOrganisasjonsnummer"],
@@ -154,7 +158,7 @@ namespace enhetsregisteret_etl
                         Properties = g.SelectMany(resource => resource.Properties)
                     };
 
-                OutputReduceToCollection = "EnhetsregisteretResource";
+                OutputReduceToCollection = "EnheterResource";
             }
 
             public override IndexDefinition CreateIndexDefinition()

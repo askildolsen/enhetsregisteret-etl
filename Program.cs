@@ -17,7 +17,7 @@ namespace enhetsregisteret_etl
         {
             var sw = Stopwatch.StartNew();
 
-            new EnhetsRegisteretResourceModel.EnhetsregisteretResourceIndex().Execute(DocumentStoreHolder.Store);
+            new EnheterResourceModel.EnheterResourceIndex().Execute(DocumentStoreHolder.Store);
 
             var bulkInsertEnheter = new ActionBlock<ExpandoObject[]>(batch =>
                 {
@@ -28,7 +28,7 @@ namespace enhetsregisteret_etl
                             bulkInsert.Store(
                                 e,
                                 "Enhetsregisteret/" + e.organisasjonsnummer,
-                                new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enhetsregisteret"}})
+                                new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
                             );
                         }
                     }
@@ -62,7 +62,7 @@ namespace enhetsregisteret_etl
                     bulkInsert.Store(
                         frivillig,
                         "Frivillighetsregisteret/" + frivillig.orgnr,
-                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Frivillighetsregisteret"}})
+                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
                     );
                 }
             }
@@ -76,7 +76,7 @@ namespace enhetsregisteret_etl
                     bulkInsert.Store(
                         stotte,
                         "Stotteregisteret/" + stotte.tildelingId,
-                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Stotteregisteret"}})
+                        new MetadataAsDictionary(new Dictionary<string, object> { { "@collection", "Enheter"}})
                     );
                 }
             }
