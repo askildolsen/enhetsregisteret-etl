@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using Raven.Client.Documents.BulkInsert;
 using Raven.Client.Json;
@@ -17,7 +18,7 @@ namespace enhetsregisteret_etl
         {
             using (WebResponse response = request.GetResponse())
             using (var stream = response.GetResponseStream())
-            using (StreamReader reader = new StreamReader(stream))
+            using (StreamReader reader = new StreamReader(stream, Encoding.GetEncoding(((HttpWebResponse)response).CharacterSet)))
             {
                 foreach(var expando in ParseStream(reader))
                 {
