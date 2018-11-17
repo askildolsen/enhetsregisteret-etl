@@ -44,8 +44,8 @@ namespace enhetsregisteret_etl
                     select new Resource
                     {
                         ResourceId =  enhet["organisasjonsnummer"],
-                        Type = new[] { "Enhet", enhet["orgform.kode"] + "|" + enhet["orgform.beskrivelse"] },
-                        SubType = new [] { enhet["institusjonellSektorkode.kode"] + "|" + enhet["institusjonellSektorkode.beskrivelse"] }.Where(s => s != "|"),
+                        Type = new[] { "Enhet" },
+                        SubType = new [] { enhet["orgform.beskrivelse"] },
                         Title = new[] { enhet["navn"] },
                         Code =  new[] { enhet["organisasjonsnummer"] },
                         Status = 
@@ -54,48 +54,77 @@ namespace enhetsregisteret_etl
                             select status,
                         Tags =
                             new[] {
-                                enhet["naeringskode1.kode"] + "|" + enhet["naeringskode1.beskrivelse"],
-                                enhet["naeringskode2.kode"] + "|" + enhet["naeringskode2.beskrivelse"],
-                                enhet["naeringskode3.kode"] + "|" + enhet["naeringskode3.beskrivelse"]
-                            }.Where(s => s != "|"),
-                        Properties = new[] {
-                            new Property
-                            {
-                                Name = "Postadresse",
-                                Value = new[] {
-                                    enhet["postadresse.adresse"],
-                                    enhet["postadresse.postnummer"] + " " + enhet["postadresse.poststed"] },
-                                Resources = new[] {
-                                    new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["postadresse.postnummer"] }, Title = new[] { enhet["postadresse.poststed"] } },
-                                    new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["postadresse.kommunenummer"] }, Title = new[] { enhet["postadresse.kommune"] } },
-                                    new Resource { Type = new[] { "Land" }, Code = new[] { enhet["postadresse.landkode"] }, Title = new[] { enhet["postadresse.land"] } }
+                                enhet["naeringskode1.beskrivelse"],
+                                enhet["naeringskode2.beskrivelse"],
+                                enhet["naeringskode3.beskrivelse"],
+                                enhet["institusjonellSektorkode.beskrivelse"]
+                            }.Where(s => !String.IsNullOrEmpty(s)),
+                        Properties = (
+                                new[] {
+                                    new Property {
+                                        Name = "Organisasjonsform",
+                                        Resources = new[] {
+                                            new Resource { Code = new[] { enhet["orgform.kode"] }, Title = new[] { enhet["orgform.beskrivelse"] }}
+                                        }
+                                    }
                                 }
-                            },
-                            new Property
-                            {
-                                Name = "Forretningsadresse",
-                                Value = new[] {
-                                    enhet["forretningsadresse.adresse"],
-                                    enhet["forretningsadresse.postnummer"] + " " + enhet["forretningsadresse.poststed"] },
-                                Resources = new[] {
-                                    new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["forretningsadresse.postnummer"] }, Title = new[] { enhet["forretningsadresse.poststed"] } },
-                                    new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["forretningsadresse.kommunenummer"] }, Title = new[] { enhet["forretningsadresse.kommune"] } },
-                                    new Resource { Type = new[] { "Land" }, Code = new[] { enhet["forretningsadresse.landkode"] }, Title = new[] { enhet["forretningsadresse.land"] } }
+                            ).Union(
+                                new[] {
+                                    new Property {
+                                        Name = "Naeringskode",
+                                        Resources = new[] {
+                                            new Resource { Type = new[] { "Næringskode" }, Code = new[] { enhet["naeringskode1.kode"] }, Title = new[] { enhet["naeringskode1.beskrivelse"] } },
+                                            new Resource { Type = new[] { "Næringskode" }, Code = new[] { enhet["naeringskode2.kode"] }, Title = new[] { enhet["naeringskode2.beskrivelse"] } },
+                                            new Resource { Type = new[] { "Næringskode" }, Code = new[] { enhet["naeringskode3.kode"] }, Title = new[] { enhet["naeringskode3.beskrivelse"] } },
+                                        }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
+                                    }
                                 }
-                            },
-                            new Property
-                            {
-                                Name = "Beliggenhetsadresse",
-                                Value = new[] {
-                                    enhet["beliggenhetsadresse.adresse"],
-                                    enhet["beliggenhetsadresse.postnummer"] + " " + enhet["beliggenhetsadresse.poststed"] },
-                                Resources = new[] {
-                                    new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["beliggenhetsadresse.postnummer"] }, Title = new[] { enhet["beliggenhetsadresse.poststed"] } },
-                                    new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["beliggenhetsadresse.kommunenummer"] }, Title = new[] { enhet["beliggenhetsadresse.kommune"] } },
-                                    new Resource { Type = new[] { "Land" }, Code = new[] { enhet["beliggenhetsadresse.landkode"] }, Title = new[] { enhet["beliggenhetsadresse.land"] } }
+                            ).Union(
+                                new[] {
+                                    new Property {
+                                        Name = "Sektorkode",
+                                        Resources = new[] {
+                                            new Resource { Type = new[] { "Sektorkode" }, Code = new[] { enhet["institusjonellSektorkode.kode"] }, Title = new[] { enhet["institusjonellSektorkode.beskrivelse"] } }
+                                        }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
+                                    }
                                 }
-                            }
-                        }.Where(p => p.Value.Any(v => !String.IsNullOrWhiteSpace(v)))
+                            ).Union(
+                                new[] {
+                                    new Property {
+                                        Name = "Postadresse",
+                                        Value = new[] {
+                                            enhet["postadresse.adresse"],
+                                            enhet["postadresse.postnummer"] + " " + enhet["postadresse.poststed"] },
+                                        Resources = new[] {
+                                            new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["postadresse.postnummer"] }, Title = new[] { enhet["postadresse.poststed"] } },
+                                            new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["postadresse.kommunenummer"] }, Title = new[] { enhet["postadresse.kommune"] } },
+                                            new Resource { Type = new[] { "Land" }, Code = new[] { enhet["postadresse.landkode"] }, Title = new[] { enhet["postadresse.land"] } }
+                                        }
+                                    },
+                                    new Property {
+                                        Name = "Forretningsadresse",
+                                        Value = new[] {
+                                            enhet["forretningsadresse.adresse"],
+                                            enhet["forretningsadresse.postnummer"] + " " + enhet["forretningsadresse.poststed"] },
+                                        Resources = new[] {
+                                            new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["forretningsadresse.postnummer"] }, Title = new[] { enhet["forretningsadresse.poststed"] } },
+                                            new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["forretningsadresse.kommunenummer"] }, Title = new[] { enhet["forretningsadresse.kommune"] } },
+                                            new Resource { Type = new[] { "Land" }, Code = new[] { enhet["forretningsadresse.landkode"] }, Title = new[] { enhet["forretningsadresse.land"] } }
+                                        }
+                                    },
+                                    new Property {
+                                        Name = "Beliggenhetsadresse",
+                                        Value = new[] {
+                                            enhet["beliggenhetsadresse.adresse"],
+                                            enhet["beliggenhetsadresse.postnummer"] + " " + enhet["beliggenhetsadresse.poststed"] },
+                                        Resources = new[] {
+                                            new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["beliggenhetsadresse.postnummer"] }, Title = new[] { enhet["beliggenhetsadresse.poststed"] } },
+                                            new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["beliggenhetsadresse.kommunenummer"] }, Title = new[] { enhet["beliggenhetsadresse.kommune"] } },
+                                            new Resource { Type = new[] { "Land" }, Code = new[] { enhet["beliggenhetsadresse.landkode"] }, Title = new[] { enhet["beliggenhetsadresse.land"] } }
+                                        }
+                                    }
+                                }.Where(p => p.Value.Any(v => !String.IsNullOrWhiteSpace(v)))
+                            )
                     }
                 );
 
