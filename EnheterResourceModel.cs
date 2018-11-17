@@ -142,11 +142,20 @@ namespace enhetsregisteret_etl
                         Status = new string[] { "frivillig" },
                         Tags =
                             new[] {
-                                frivillig["kategori1"] + "|" + frivillig["kategori1_tekst"],
-                                frivillig["kategori2"] + "|" + frivillig["kategori2_tekst"],
-                                frivillig["kategori3"] + "|" + frivillig["kategori3_tekst"]
+                                frivillig["kategori1_tekst"],
+                                frivillig["kategori2_tekst"],
+                                frivillig["kategori3_tekst"]
                             }.Where(s => !String.IsNullOrEmpty(s)),
-                        Properties = new Property[] { }
+                        Properties = new[] {
+                            new Property {
+                                Name = "Aktivitetskategori",
+                                Resources = new[] {
+                                    new Resource { Type = new[] { "Aktivitetskategori" }, Code = new[] { frivillig["kategori1"] }, Title = new[] { frivillig["kategori1_tekst"] } },
+                                    new Resource { Type = new[] { "Aktivitetskategori" }, Code = new[] { frivillig["kategori2"] }, Title = new[] { frivillig["kategori2_tekst"] } },
+                                    new Resource { Type = new[] { "Aktivitetskategori" }, Code = new[] { frivillig["kategori3"] }, Title = new[] { frivillig["kategori3_tekst"] } },
+                                }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
+                            }
+                        }
                     }
                 );
 
