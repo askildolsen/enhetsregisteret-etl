@@ -202,6 +202,64 @@ namespace enhetsregisteret_etl
                     }
                 );
 
+                AddMap<Enheter>(enheter =>
+                    from naeringskode in enheter
+                    let metadata = MetadataFor(naeringskode)
+                    where metadata.Value<string>("@id").StartsWith("Naeringskode")
+                    select new Resource
+                    {
+                        ResourceId = naeringskode["code"],
+                        Type = new string[] { "Næringskode" },
+                        SubType = new string[] { },
+                        Title = new string[] { naeringskode["name"] },
+                        Code =  new string[] { naeringskode["code"] },
+                        Status = new string[] { },
+                        Tags = new string[] { },
+                        Properties = new[] {
+                            new Property {
+                                Name = "Klassifisering",
+                                Resources = 
+                                    from o in Recurse(naeringskode, n => LoadDocument<Enheter>("Naeringskode/" + n["parentCode"])).Reverse()
+                                    where o != null
+                                    select new Resource
+                                    {
+                                        Title = new[] { o["name"] },
+                                        Code = new[] { o["code"] }
+                                    }
+                            }
+                         }
+                    }
+                );
+
+                AddMap<Enheter>(enheter =>
+                    from sektorkode in enheter
+                    let metadata = MetadataFor(sektorkode)
+                    where metadata.Value<string>("@id").StartsWith("Sektorkode")
+                    select new Resource
+                    {
+                        ResourceId = sektorkode["code"],
+                        Type = new string[] { "Sektorkode" },
+                        SubType = new string[] { },
+                        Title = new string[] { sektorkode["name"] },
+                        Code =  new string[] { sektorkode["code"] },
+                        Status = new string[] { },
+                        Tags = new string[] { },
+                        Properties = new[] {
+                            new Property {
+                                Name = "Klassifisering",
+                                Resources = 
+                                    from o in Recurse(sektorkode, n => LoadDocument<Enheter>("Sektorkode/" + n["parentCode"])).Reverse()
+                                    where o != null
+                                    select new Resource
+                                    {
+                                        Title = new[] { o["name"] },
+                                        Code = new[] { o["code"] }
+                                    }
+                            }
+                         }
+                    }
+                );
+
                 Reduce = results  =>
                     from result in results
                     group result by result.ResourceId into g

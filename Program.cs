@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -82,6 +82,27 @@ namespace enhetsregisteret_etl
             }
 
             Console.WriteLine(". Stotteregisteret: {0}", sw.Elapsed);
+
+            using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
+            {
+                foreach (dynamic naeringskode in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/30.csv?language=nb")))
+                {
+                    bulkInsert.Store(
+                        naeringskode,
+                        "Naeringskode/" + naeringskode.code,
+                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
+                    );
+                }
+
+                foreach (dynamic sektorkode in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/92.csv?language=nb")))
+                {
+                    bulkInsert.Store(
+                        sektorkode,
+                        "Sektorkode/" + sektorkode.code,
+                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
+                    );
+                }
+            }
         }
     }
 }
