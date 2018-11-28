@@ -16,6 +16,7 @@ namespace enhetsregisteret_etl
             public IEnumerable<string> Status { get; set; }
             public IEnumerable<string> Tags { get; set; }
             public IEnumerable<Property> Properties { get; set; }
+            public IEnumerable<string> Source { get; set; }
         }
 
         public class Property

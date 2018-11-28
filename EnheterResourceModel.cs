@@ -102,13 +102,15 @@ namespace enhetsregisteret_etl
                                         }
                                     }
                                 }.Where(p => p.Value.Any(v => !String.IsNullOrWhiteSpace(v)))
-                            )
+                            ),
+                        Source = new[] { metadata.Value<string>("@id") }
                     }
                 );
 
                 AddMap<Enheter>(enheter =>
                     from enhet in enheter
-                    where MetadataFor(enhet).Value<string>("@id").StartsWith("Enhetsregisteret") && !String.IsNullOrEmpty(enhet["overordnetEnhet"])
+                    let metadata = MetadataFor(enhet)
+                    where metadata.Value<string>("@id").StartsWith("Enhetsregisteret") && !String.IsNullOrEmpty(enhet["overordnetEnhet"])
                     select new Resource
                     {
                         ResourceId = enhet["organisasjonsnummer"],
@@ -123,7 +125,8 @@ namespace enhetsregisteret_etl
                                 Name = "Overordnet",
                                 Resources = new[] { new Resource { Type = new[] { "Enhet" }, Code = new[] { enhet["overordnetEnhet"] }} }
                             }
-                        }
+                        },
+                        Source = new[] { metadata.Value<string>("@id") }
                     }
                 );
 
@@ -154,7 +157,8 @@ namespace enhetsregisteret_etl
                                     new Resource { Type = new[] { "Aktivitetskategori" }, Code = new[] { frivillig["kategori3"] }, Title = new[] { frivillig["kategori3_tekst"] } },
                                 }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
                             }
-                        }
+                        },
+                        Source = new[] { metadata.Value<string>("@id") }
                     }
                 );
 
@@ -176,7 +180,8 @@ namespace enhetsregisteret_etl
                                 stotte["formaal"],
                                 stotte["stotteinstrument"]
                             }.Where(s => !String.IsNullOrEmpty(s)),
-                        Properties = new Property[] { }
+                        Properties = new Property[] { },
+                        Source = new[] { metadata.Value<string>("@id") }
                     }
                 );
 
@@ -205,7 +210,8 @@ namespace enhetsregisteret_etl
                                         Code = new[] { o["code"] }
                                     }
                             }
-                         }
+                        },
+                        Source = new[] { metadata.Value<string>("@id") }
                     }
                 );
 
@@ -234,7 +240,8 @@ namespace enhetsregisteret_etl
                                         Code = new[] { o["code"] }
                                     }
                             }
-                         }
+                        },
+                        Source = new[] { metadata.Value<string>("@id") }
                     }
                 );
 
@@ -250,7 +257,8 @@ namespace enhetsregisteret_etl
                         Code = g.SelectMany(resource => resource.Code).Distinct(),
                         Status = g.SelectMany(resource => resource.Status).Distinct(),
                         Tags = g.SelectMany(resource => resource.Tags).Distinct(),
-                        Properties = g.SelectMany(resource => resource.Properties)
+                        Properties = g.SelectMany(resource => resource.Properties),
+                        Source = g.SelectMany(resource => resource.Source).Distinct()
                     };
 
                 OutputReduceToCollection = "EnheterResource";
