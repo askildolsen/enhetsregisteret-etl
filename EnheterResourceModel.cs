@@ -123,7 +123,9 @@ namespace enhetsregisteret_etl
                         Properties = new[] {
                             new Property {
                                 Name = "Overordnet",
-                                Resources = new[] { new Resource { Type = new[] { "Enhet" }, Code = new[] { enhet["overordnetEnhet"] }} }
+                                Resources = new[] {
+                                    new Property.Resource { Type = new[] { "Enhet" }, Code = new[] { enhet["overordnetEnhet"] }, Target = ResourceTarget("Enheter", enhet["overordnetEnhet"]) }
+                                }
                             }
                         },
                         Source = new[] { metadata.Value<string>("@id") }
@@ -262,6 +264,14 @@ namespace enhetsregisteret_etl
                     };
 
                 OutputReduceToCollection = "EnheterResource";
+
+                AdditionalSources = new Dictionary<string, string>
+                {
+                    {
+                        "ResourceModel",
+                        ReadResourceFile("enhetsregisteret_etl.ResourceModel.cs")
+                    }
+                };
             }
 
             public override IndexDefinition CreateIndexDefinition()
@@ -274,8 +284,21 @@ namespace enhetsregisteret_etl
                     Maps = indexDefinition.Maps,
                     Reduce = indexDefinition.Reduce,
                     OutputReduceToCollection = indexDefinition.OutputReduceToCollection,
-                    Configuration = new IndexConfiguration { { "Indexing.MapTimeoutInSec", "30"} }
+                    AdditionalSources = indexDefinition.AdditionalSources,
+                    Configuration = new IndexConfiguration { { "Indexing.MapTimeoutInSec", "90"} }
                 };
+            }
+        }
+
+        private static string ReadResourceFile(string filename)
+        {
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            using (var stream = assembly.GetManifestResourceStream(filename))
+            {
+                using (var reader = new System.IO.StreamReader(stream))
+                {
+                    return reader.ReadToEnd();
+                }
             }
         }
     }

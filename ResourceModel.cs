@@ -24,8 +24,23 @@ namespace enhetsregisteret_etl
             public string Name { get; set; }
             public IEnumerable<string> Value { get; set; }
             public IEnumerable<string> Tags { get; set; }
-            public IEnumerable<Resource> Resources { get; set; }
+            public IEnumerable<ResourceModel.Resource> Resources { get; set; }
             public IEnumerable<Property> Properties { get; set; }
+            public IEnumerable<string> Source { get; set; }
+
+            public class Resource : ResourceModel.Resource {
+                public string Target { get; set; }
+            }
+        }
+
+        public static string ResourceTarget(string Context, string ResourceId)
+        {
+            return Context + "Resource/" + CalculateXXHash64(ResourceId);
+        }
+
+        private static string CalculateXXHash64(string key)
+        {
+            return Sparrow.Hashing.XXHash64.Calculate(key, System.Text.Encoding.UTF8).ToString();
         }
     }
 }
