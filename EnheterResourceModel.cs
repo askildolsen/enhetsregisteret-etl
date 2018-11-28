@@ -3,35 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Linq.Indexing;
+using static enhetsregisteret_etl.ResourceModel;
 
 namespace enhetsregisteret_etl
 {
     public class EnheterResourceModel
     {
         public class Enheter : Dictionary<string, string> { }
-
-        public class Resource
-        {
-            public Resource() { }
-            public string ResourceId { get; set; }
-            public IEnumerable<string> Type { get; set; }
-            public IEnumerable<string> SubType { get; set; }
-            public IEnumerable<string> Title { get; set; }
-            public IEnumerable<string> SubTitle { get; set; }
-            public IEnumerable<string> Code { get; set; }
-            public IEnumerable<string> Status { get; set; }
-            public IEnumerable<string> Tags { get; set; }
-            public IEnumerable<Property> Properties { get; set; }
-        }
-
-        public class Property
-        {
-            public string Name { get; set; }
-            public IEnumerable<string> Value { get; set; }
-            public IEnumerable<string> Tags { get; set; }
-            public IEnumerable<Resource> Resources { get; set; }
-            public IEnumerable<Property> Properties { get; set; }
-        }
 
         public class EnheterResourceIndex : AbstractMultiMapIndexCreationTask<Resource>
         {
