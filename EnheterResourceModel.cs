@@ -66,43 +66,59 @@ namespace enhetsregisteret_etl
                                         }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
                                     }
                                 }
-                            ).Union(
-                                new[] {
-                                    new Property {
-                                        Name = "Postadresse",
-                                        Value = new[] {
-                                            enhet["postadresse.adresse"],
-                                            enhet["postadresse.postnummer"] + " " + enhet["postadresse.poststed"] },
-                                        Resources = new[] {
-                                            new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["postadresse.postnummer"] }, Title = new[] { enhet["postadresse.poststed"] } },
-                                            new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["postadresse.kommunenummer"] }, Title = new[] { enhet["postadresse.kommune"] } },
-                                            new Resource { Type = new[] { "Land" }, Code = new[] { enhet["postadresse.landkode"] }, Title = new[] { enhet["postadresse.land"] } }
-                                        }
-                                    },
-                                    new Property {
-                                        Name = "Forretningsadresse",
-                                        Value = new[] {
-                                            enhet["forretningsadresse.adresse"],
-                                            enhet["forretningsadresse.postnummer"] + " " + enhet["forretningsadresse.poststed"] },
-                                        Resources = new[] {
-                                            new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["forretningsadresse.postnummer"] }, Title = new[] { enhet["forretningsadresse.poststed"] } },
-                                            new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["forretningsadresse.kommunenummer"] }, Title = new[] { enhet["forretningsadresse.kommune"] } },
-                                            new Resource { Type = new[] { "Land" }, Code = new[] { enhet["forretningsadresse.landkode"] }, Title = new[] { enhet["forretningsadresse.land"] } }
-                                        }
-                                    },
-                                    new Property {
-                                        Name = "Beliggenhetsadresse",
-                                        Value = new[] {
-                                            enhet["beliggenhetsadresse.adresse"],
-                                            enhet["beliggenhetsadresse.postnummer"] + " " + enhet["beliggenhetsadresse.poststed"] },
-                                        Resources = new[] {
-                                            new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["beliggenhetsadresse.postnummer"] }, Title = new[] { enhet["beliggenhetsadresse.poststed"] } },
-                                            new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["beliggenhetsadresse.kommunenummer"] }, Title = new[] { enhet["beliggenhetsadresse.kommune"] } },
-                                            new Resource { Type = new[] { "Land" }, Code = new[] { enhet["beliggenhetsadresse.landkode"] }, Title = new[] { enhet["beliggenhetsadresse.land"] } }
-                                        }
-                                    }
-                                }.Where(p => p.Value.Any(v => !String.IsNullOrWhiteSpace(v)))
                             ),
+                        Source = new[] { metadata.Value<string>("@id") }
+                    }
+                );
+
+                AddMap<Enheter>(enheter =>
+                    from enhet in enheter
+                    let metadata = MetadataFor(enhet)
+                    where metadata.Value<string>("@id").StartsWith("Enhetsregisteret")
+                    select new Resource
+                    {
+                        ResourceId = enhet["organisasjonsnummer"],
+                        Type = new string[] { },
+                        SubType = new string[] { },
+                        Title = new string[] { },
+                        Code =  new string[] { },
+                        Status = new string[] { },
+                        Tags = new string[] { },
+                        Properties = new[] {
+                            new Property {
+                                Name = "Postadresse",
+                                Value = new[] {
+                                    enhet["postadresse.adresse"],
+                                    enhet["postadresse.postnummer"] + " " + enhet["postadresse.poststed"] },
+                                Resources = new[] {
+                                    new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["postadresse.postnummer"] }, Title = new[] { enhet["postadresse.poststed"] } },
+                                    new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["postadresse.kommunenummer"] }, Title = new[] { enhet["postadresse.kommune"] } },
+                                    new Resource { Type = new[] { "Land" }, Code = new[] { enhet["postadresse.landkode"] }, Title = new[] { enhet["postadresse.land"] } }
+                                }
+                            },
+                            new Property {
+                                Name = "Forretningsadresse",
+                                Value = new[] {
+                                    enhet["forretningsadresse.adresse"],
+                                    enhet["forretningsadresse.postnummer"] + " " + enhet["forretningsadresse.poststed"] },
+                                Resources = new[] {
+                                    new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["forretningsadresse.postnummer"] }, Title = new[] { enhet["forretningsadresse.poststed"] } },
+                                    new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["forretningsadresse.kommunenummer"] }, Title = new[] { enhet["forretningsadresse.kommune"] } },
+                                    new Resource { Type = new[] { "Land" }, Code = new[] { enhet["forretningsadresse.landkode"] }, Title = new[] { enhet["forretningsadresse.land"] } }
+                                }
+                            },
+                            new Property {
+                                Name = "Beliggenhetsadresse",
+                                Value = new[] {
+                                    enhet["beliggenhetsadresse.adresse"],
+                                    enhet["beliggenhetsadresse.postnummer"] + " " + enhet["beliggenhetsadresse.poststed"] },
+                                Resources = new[] {
+                                    new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["beliggenhetsadresse.postnummer"] }, Title = new[] { enhet["beliggenhetsadresse.poststed"] } },
+                                    new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["beliggenhetsadresse.kommunenummer"] }, Title = new[] { enhet["beliggenhetsadresse.kommune"] } },
+                                    new Resource { Type = new[] { "Land" }, Code = new[] { enhet["beliggenhetsadresse.landkode"] }, Title = new[] { enhet["beliggenhetsadresse.land"] } }
+                                }
+                            }
+                        }.Where(p => p.Value.Any(v => !String.IsNullOrWhiteSpace(v))),
                         Source = new[] { metadata.Value<string>("@id") }
                     }
                 );
