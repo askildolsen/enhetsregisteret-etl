@@ -260,6 +260,9 @@ namespace enhetsregisteret_etl
                         Source = g.SelectMany(resource => resource.Source).Distinct()
                     };
 
+                Index(r => r.Properties, FieldIndexing.No);
+                Store(r => r.Properties, FieldStorage.Yes);
+
                 OutputReduceToCollection = "EnheterResource";
 
                 AdditionalSources = new Dictionary<string, string>
@@ -280,6 +283,7 @@ namespace enhetsregisteret_etl
                     Name = indexDefinition.Name,
                     Maps = indexDefinition.Maps,
                     Reduce = indexDefinition.Reduce,
+                    Fields = indexDefinition.Fields,
                     OutputReduceToCollection = indexDefinition.OutputReduceToCollection,
                     AdditionalSources = indexDefinition.AdditionalSources,
                     Configuration = new IndexConfiguration { { "Indexing.MapTimeoutInSec", "30"} }
