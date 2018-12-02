@@ -65,7 +65,7 @@ namespace enhetsregisteret_etl
                                             new Resource { Type = new[] { "Sektorkode" }, Code = new[] { enhet["institusjonellSektorkode.kode"] }, Title = new[] { enhet["institusjonellSektorkode.beskrivelse"] } }
                                         }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
                                     }
-                                }
+                                }.Where(p => p.Resources.Any())
                             ),
                         Source = new[] { metadata.Value<string>("@id") }
                     }
