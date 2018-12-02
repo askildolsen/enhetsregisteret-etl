@@ -282,7 +282,7 @@ namespace enhetsregisteret_etl
                     Reduce = indexDefinition.Reduce,
                     OutputReduceToCollection = indexDefinition.OutputReduceToCollection,
                     AdditionalSources = indexDefinition.AdditionalSources,
-                    Configuration = new IndexConfiguration { { "Indexing.MapTimeoutInSec", "90"} }
+                    Configuration = new IndexConfiguration { { "Indexing.MapTimeoutInSec", "30"} }
                 };
             }
         }
