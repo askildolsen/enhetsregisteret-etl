@@ -91,7 +91,7 @@ namespace enhetsregisteret_etl
                                 Name = adresse,
                                 Value = new[] {
                                     enhet[adresse.ToLower() + ".adresse"],
-                                    enhet[adresse.ToLower() + ".postnummer"] + " " + enhet[adresse.ToLower() + ".poststed"] },
+                                    ((enhet[adresse.ToLower() + ".postnummer"] + " ") ?? "") + enhet[adresse.ToLower() + ".poststed"] },
                                 Resources = new[] {
                                     new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet[adresse.ToLower() + ".postnummer"] }, Title = new[] { enhet[adresse.ToLower() + ".poststed"] } },
                                     new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet[adresse.ToLower() + ".kommunenummer"] }, Title = new[] { enhet[adresse.ToLower() + ".kommune"] } },
