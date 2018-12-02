@@ -84,41 +84,20 @@ namespace enhetsregisteret_etl
                         Code =  new string[] { },
                         Status = new string[] { },
                         Tags = new string[] { },
-                        Properties = new[] {
-                            new Property {
-                                Name = "Postadresse",
+                        Properties =
+                            from adresse in new[] { "Postadresse", "Forretningsadresse", "Beliggenhetsadresse" }
+                            where enhet[adresse.ToLower() + ".landkode"] != null
+                            select new Property {
+                                Name = adresse,
                                 Value = new[] {
-                                    enhet["postadresse.adresse"],
-                                    enhet["postadresse.postnummer"] + " " + enhet["postadresse.poststed"] },
+                                    enhet[adresse.ToLower() + ".adresse"],
+                                    enhet[adresse.ToLower() + ".postnummer"] + " " + enhet[adresse.ToLower() + ".poststed"] },
                                 Resources = new[] {
-                                    new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["postadresse.postnummer"] }, Title = new[] { enhet["postadresse.poststed"] } },
-                                    new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["postadresse.kommunenummer"] }, Title = new[] { enhet["postadresse.kommune"] } },
-                                    new Resource { Type = new[] { "Land" }, Code = new[] { enhet["postadresse.landkode"] }, Title = new[] { enhet["postadresse.land"] } }
+                                    new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet[adresse.ToLower() + ".postnummer"] }, Title = new[] { enhet[adresse.ToLower() + ".poststed"] } },
+                                    new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet[adresse.ToLower() + ".kommunenummer"] }, Title = new[] { enhet[adresse.ToLower() + ".kommune"] } },
+                                    new Resource { Type = new[] { "Land" }, Code = new[] { enhet[adresse.ToLower() + ".landkode"] }, Title = new[] { enhet[adresse.ToLower() + ".land"] } }
                                 }
                             },
-                            new Property {
-                                Name = "Forretningsadresse",
-                                Value = new[] {
-                                    enhet["forretningsadresse.adresse"],
-                                    enhet["forretningsadresse.postnummer"] + " " + enhet["forretningsadresse.poststed"] },
-                                Resources = new[] {
-                                    new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["forretningsadresse.postnummer"] }, Title = new[] { enhet["forretningsadresse.poststed"] } },
-                                    new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["forretningsadresse.kommunenummer"] }, Title = new[] { enhet["forretningsadresse.kommune"] } },
-                                    new Resource { Type = new[] { "Land" }, Code = new[] { enhet["forretningsadresse.landkode"] }, Title = new[] { enhet["forretningsadresse.land"] } }
-                                }
-                            },
-                            new Property {
-                                Name = "Beliggenhetsadresse",
-                                Value = new[] {
-                                    enhet["beliggenhetsadresse.adresse"],
-                                    enhet["beliggenhetsadresse.postnummer"] + " " + enhet["beliggenhetsadresse.poststed"] },
-                                Resources = new[] {
-                                    new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet["beliggenhetsadresse.postnummer"] }, Title = new[] { enhet["beliggenhetsadresse.poststed"] } },
-                                    new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet["beliggenhetsadresse.kommunenummer"] }, Title = new[] { enhet["beliggenhetsadresse.kommune"] } },
-                                    new Resource { Type = new[] { "Land" }, Code = new[] { enhet["beliggenhetsadresse.landkode"] }, Title = new[] { enhet["beliggenhetsadresse.land"] } }
-                                }
-                            }
-                        }.Where(p => p.Value.Any(v => !String.IsNullOrWhiteSpace(v))),
                         Source = new[] { metadata.Value<string>("@id") }
                     }
                 );
@@ -222,10 +201,11 @@ namespace enhetsregisteret_etl
                                 Resources = 
                                     from o in Recurse(naeringskode, n => LoadDocument<Enheter>("Naeringskode/" + n["parentCode"])).Reverse()
                                     where o != null
-                                    select new Resource
+                                    select new Property.Resource
                                     {
                                         Title = new[] { o["name"] },
-                                        Code = new[] { o["code"] }
+                                        Code = new[] { o["code"] },
+                                        Target = ResourceTarget("Enheter", o["code"])
                                     }
                             }
                         },
@@ -252,10 +232,11 @@ namespace enhetsregisteret_etl
                                 Resources = 
                                     from o in Recurse(sektorkode, n => LoadDocument<Enheter>("Sektorkode/" + n["parentCode"])).Reverse()
                                     where o != null
-                                    select new Resource
+                                    select new Property.Resource
                                     {
                                         Title = new[] { o["name"] },
-                                        Code = new[] { o["code"] }
+                                        Code = new[] { o["code"] },
+                                        Target = ResourceTarget("Enheter", o["code"])
                                     }
                             }
                         },
