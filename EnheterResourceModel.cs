@@ -96,7 +96,7 @@ namespace enhetsregisteret_etl
                                     new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet[adresse.ToLower() + ".postnummer"] }, Title = new[] { enhet[adresse.ToLower() + ".poststed"] } },
                                     new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet[adresse.ToLower() + ".kommunenummer"] }, Title = new[] { enhet[adresse.ToLower() + ".kommune"] } },
                                     new Resource { Type = new[] { "Land" }, Code = new[] { enhet[adresse.ToLower() + ".landkode"] }, Title = new[] { enhet[adresse.ToLower() + ".land"] } }
-                                }
+                                }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
                             },
                         Source = new[] { metadata.Value<string>("@id") }
                     }
