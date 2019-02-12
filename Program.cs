@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -27,7 +27,7 @@ namespace enhetsregisteret_etl
                         {
                             bulkInsert.Store(
                                 e,
-                                "Enhetsregisteret/" + e.organisasjonsnummer,
+                                "Enheter/Enhetsregisteret/" + e.organisasjonsnummer,
                                 new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
                             );
                         }
@@ -61,7 +61,7 @@ namespace enhetsregisteret_etl
                 {
                     bulkInsert.Store(
                         frivillig,
-                        "Frivillighetsregisteret/" + frivillig.orgnr,
+                        "Enheter/Frivillighetsregisteret/" + frivillig.orgnr,
                         new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
                     );
                 }
@@ -75,7 +75,7 @@ namespace enhetsregisteret_etl
                 {
                     bulkInsert.Store(
                         stotte,
-                        "Stotteregisteret/" + stotte.tildelingId,
+                        "Enheter/Stotteregisteret/" + stotte.tildelingId,
                         new MetadataAsDictionary(new Dictionary<string, object> { { "@collection", "Enheter"}})
                     );
                 }
@@ -89,7 +89,7 @@ namespace enhetsregisteret_etl
                 {
                     bulkInsert.Store(
                         naeringskode,
-                        "Naeringskode/" + naeringskode.code,
+                        "Enheter/Naeringskode/" + naeringskode.code,
                         new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
                     );
                 }
@@ -98,7 +98,7 @@ namespace enhetsregisteret_etl
                 {
                     bulkInsert.Store(
                         sektorkode,
-                        "Sektorkode/" + sektorkode.code,
+                        "Enheter/Sektorkode/" + sektorkode.code,
                         new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
                     );
                 }

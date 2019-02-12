@@ -18,7 +18,7 @@ namespace enhetsregisteret_etl
                 AddMap<Enheter>(enheter =>
                     from enhet in enheter
                     let metadata = MetadataFor(enhet)
-                    where metadata.Value<string>("@id").StartsWith("Enhetsregisteret")
+                    where metadata.Value<string>("@id").StartsWith("Enheter/Enhetsregisteret")
                     select new Resource
                     {
                         ResourceId =  enhet["organisasjonsnummer"],
@@ -74,7 +74,7 @@ namespace enhetsregisteret_etl
                 AddMap<Enheter>(enheter =>
                     from enhet in enheter
                     let metadata = MetadataFor(enhet)
-                    where metadata.Value<string>("@id").StartsWith("Enhetsregisteret")
+                    where metadata.Value<string>("@id").StartsWith("Enheter/Enhetsregisteret")
                     select new Resource
                     {
                         ResourceId = enhet["organisasjonsnummer"],
@@ -105,7 +105,7 @@ namespace enhetsregisteret_etl
                 AddMap<Enheter>(enheter =>
                     from enhet in enheter
                     let metadata = MetadataFor(enhet)
-                    where metadata.Value<string>("@id").StartsWith("Enhetsregisteret") && !String.IsNullOrEmpty(enhet["overordnetEnhet"])
+                    where metadata.Value<string>("@id").StartsWith("Enheter/Enhetsregisteret") && !String.IsNullOrEmpty(enhet["overordnetEnhet"])
                     select new Resource
                     {
                         ResourceId = enhet["organisasjonsnummer"],
@@ -130,7 +130,7 @@ namespace enhetsregisteret_etl
                 AddMap<Enheter>(enheter =>
                     from frivillig in enheter
                     let metadata = MetadataFor(frivillig)
-                    where metadata.Value<string>("@id").StartsWith("Frivillighetsregisteret")
+                    where metadata.Value<string>("@id").StartsWith("Enheter/Frivillighetsregisteret")
                     select new Resource
                     {
                         ResourceId =  frivillig["orgnr"],
@@ -162,7 +162,7 @@ namespace enhetsregisteret_etl
                 AddMap<Enheter>(enheter =>
                     from stotte in enheter
                     let metadata = MetadataFor(stotte)
-                    where metadata.Value<string>("@id").StartsWith("Stotteregisteret")
+                    where metadata.Value<string>("@id").StartsWith("Enheter/Stotteregisteret")
                     select new Resource
                     {
                         ResourceId = stotte["stottemottakerOrganisasjonsnummer"],
@@ -185,7 +185,7 @@ namespace enhetsregisteret_etl
                 AddMap<Enheter>(enheter =>
                     from naeringskode in enheter
                     let metadata = MetadataFor(naeringskode)
-                    where metadata.Value<string>("@id").StartsWith("Naeringskode")
+                    where metadata.Value<string>("@id").StartsWith("Enheter/Naeringskode")
                     select new Resource
                     {
                         ResourceId = naeringskode["code"],
@@ -199,7 +199,7 @@ namespace enhetsregisteret_etl
                             new Property {
                                 Name = "Klassifisering",
                                 Resources = 
-                                    from o in Recurse(naeringskode, n => LoadDocument<Enheter>("Naeringskode/" + n["parentCode"])).Reverse()
+                                    from o in Recurse(naeringskode, n => LoadDocument<Enheter>("Enheter/Naeringskode/" + n["parentCode"])).Reverse()
                                     where o != null
                                     select new Property.Resource
                                     {
@@ -216,7 +216,7 @@ namespace enhetsregisteret_etl
                 AddMap<Enheter>(enheter =>
                     from sektorkode in enheter
                     let metadata = MetadataFor(sektorkode)
-                    where metadata.Value<string>("@id").StartsWith("Sektorkode")
+                    where metadata.Value<string>("@id").StartsWith("Enheter/Sektorkode")
                     select new Resource
                     {
                         ResourceId = sektorkode["code"],
@@ -230,7 +230,7 @@ namespace enhetsregisteret_etl
                             new Property {
                                 Name = "Klassifisering",
                                 Resources = 
-                                    from o in Recurse(sektorkode, n => LoadDocument<Enheter>("Sektorkode/" + n["parentCode"])).Reverse()
+                                    from o in Recurse(sektorkode, n => LoadDocument<Enheter>("Enheter/Sektorkode/" + n["parentCode"])).Reverse()
                                     where o != null
                                     select new Property.Resource
                                     {
