@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Raven.Client.Documents;
 using Raven.Client.Documents.BulkInsert;
+using Raven.Client.Documents.Operations.Indexes;
 using Raven.Client.Json;
 
 namespace enhetsregisteret_etl
@@ -17,7 +18,10 @@ namespace enhetsregisteret_etl
         {
             var sw = Stopwatch.StartNew();
 
-            new EnheterResourceModel.EnheterResourceIndex().Execute(DocumentStoreHolder.Store);
+            if (DocumentStoreHolder.Store.Maintenance.Send(new GetIndexOperation("EnheterResourceIndex")) == null)
+            {
+                new EnheterResourceModel.EnheterResourceIndex().Execute(DocumentStoreHolder.Store);
+            }
 
             var bulkInsertEnheter = new ActionBlock<ExpandoObject[]>(batch =>
                 {
