@@ -66,39 +66,22 @@ namespace enhetsregisteret_etl
                                         }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
                                     }
                                 }.Where(p => p.Resources.Any())
+                            ).Union(
+                                from adresse in new[] { "Postadresse", "Forretningsadresse", "Beliggenhetsadresse" }
+                                where enhet[adresse.ToLower() + ".landkode"] != null
+                                select new Property {
+                                    Name = adresse,
+                                    Value = new[] {
+                                        enhet[adresse.ToLower() + ".adresse"],
+                                        ((enhet[adresse.ToLower() + ".postnummer"] + " ") ?? "") + enhet[adresse.ToLower() + ".poststed"]
+                                    }.Where(a => !String.IsNullOrEmpty(a)),
+                                    Resources = new[] {
+                                        new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet[adresse.ToLower() + ".postnummer"] }, Title = new[] { enhet[adresse.ToLower() + ".poststed"] } },
+                                        new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet[adresse.ToLower() + ".kommunenummer"] }, Title = new[] { enhet[adresse.ToLower() + ".kommune"] } },
+                                        new Resource { Type = new[] { "Land" }, Code = new[] { enhet[adresse.ToLower() + ".landkode"] }, Title = new[] { enhet[adresse.ToLower() + ".land"] } }
+                                    }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
+                                }
                             ),
-                        Source = new[] { metadata.Value<string>("@id") }
-                    }
-                );
-
-                AddMap<Enheter>(enheter =>
-                    from enhet in enheter
-                    let metadata = MetadataFor(enhet)
-                    where metadata.Value<string>("@id").StartsWith("Enheter/Enhetsregisteret")
-                    select new Resource
-                    {
-                        ResourceId = enhet["organisasjonsnummer"],
-                        Type = new string[] { },
-                        SubType = new string[] { },
-                        Title = new string[] { },
-                        Code =  new string[] { },
-                        Status = new string[] { },
-                        Tags = new string[] { },
-                        Properties =
-                            from adresse in new[] { "Postadresse", "Forretningsadresse", "Beliggenhetsadresse" }
-                            where enhet[adresse.ToLower() + ".landkode"] != null
-                            select new Property {
-                                Name = adresse,
-                                Value = new[] {
-                                    enhet[adresse.ToLower() + ".adresse"],
-                                    ((enhet[adresse.ToLower() + ".postnummer"] + " ") ?? "") + enhet[adresse.ToLower() + ".poststed"]
-                                }.Where(a => !String.IsNullOrEmpty(a)),
-                                Resources = new[] {
-                                    new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet[adresse.ToLower() + ".postnummer"] }, Title = new[] { enhet[adresse.ToLower() + ".poststed"] } },
-                                    new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet[adresse.ToLower() + ".kommunenummer"] }, Title = new[] { enhet[adresse.ToLower() + ".kommune"] } },
-                                    new Resource { Type = new[] { "Land" }, Code = new[] { enhet[adresse.ToLower() + ".landkode"] }, Title = new[] { enhet[adresse.ToLower() + ".land"] } }
-                                }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
-                            },
                         Source = new[] { metadata.Value<string>("@id") }
                     }
                 );
