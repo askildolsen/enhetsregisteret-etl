@@ -28,7 +28,7 @@ namespace enhetsregisteret_etl
                         expandoDic.Add(kv);
                     }
 
-                    yield return expando;         
+                    yield return expando;
                 }
             }
         }
