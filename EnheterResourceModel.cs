@@ -107,9 +107,15 @@ namespace enhetsregisteret_etl
                     from enhet in enheter
                     let metadata = MetadataFor(enhet)
                     where metadata.Value<string>("@id").StartsWith("Enheter/Enhetsregisteret") && !String.IsNullOrEmpty(enhet["overordnetEnhet"])
+
+                    from resource in new[] {
+                        new { ResourceId = enhet["organisasjonsnummer"], Name = "Overordnet", Code = enhet["overordnetEnhet"] },
+                        new { ResourceId = enhet["overordnetEnhet"], Name = "Underordnet", Code = enhet["organisasjonsnummer"] }
+                    }
+
                     select new Resource
                     {
-                        ResourceId = enhet["organisasjonsnummer"],
+                        ResourceId = resource.ResourceId,
                         Type = new string[] { },
                         SubType = new string[] { },
                         Title = new string[] { },
@@ -118,9 +124,10 @@ namespace enhetsregisteret_etl
                         Tags = new string[] { },
                         Properties = new[] {
                             new Property {
-                                Name = "Overordnet",
+                                Name = resource.Name,
+                                Tags = new[] { "@union" },
                                 Resources = new[] {
-                                    new Property.Resource { Type = new[] { "Enhet" }, Code = new[] { enhet["overordnetEnhet"] }, Target = ResourceTarget("Enheter", enhet["overordnetEnhet"]) }
+                                    new Property.Resource { Type = new[] { "Enhet" }, Code = new[] { resource.Code }, Target = ResourceTarget("Enheter", resource.Code) }
                                 }
                             }
                         },
@@ -251,13 +258,24 @@ namespace enhetsregisteret_etl
                     select new Resource
                     {
                         ResourceId = g.Key,
-                        Type = g.SelectMany(resource => resource.Type).Distinct(),
-                        SubType = g.SelectMany(resource => resource.SubType).Distinct(),
-                        Title = g.SelectMany(resource => resource.Title).Distinct(),
-                        Code = g.SelectMany(resource => resource.Code).Distinct(),
-                        Status = g.SelectMany(resource => resource.Status).Distinct(),
-                        Tags = g.SelectMany(resource => resource.Tags).Distinct(),
-                        Properties = g.SelectMany(resource => resource.Properties),
+                        Type = g.SelectMany(r => r.Type).Distinct(),
+                        SubType = g.SelectMany(r => r.SubType).Distinct(),
+                        Title = g.SelectMany(r => r.Title).Distinct(),
+                        Code = g.SelectMany(r => r.Code).Distinct(),
+                        Status = g.SelectMany(r => r.Status).Distinct(),
+                        Tags = g.SelectMany(r => r.Tags).Distinct(),
+                        Properties = (
+                            g.SelectMany(r => r.Properties).Where(p => !p.Tags.Contains("@union"))
+                        ).Union(
+                            from property in g.SelectMany(r => r.Properties).Where(p => p.Tags.Contains("@union"))
+                            group property by property.Name into propertyG
+                            select
+                                new Property {
+                                    Name = propertyG.Key,
+                                    Tags = propertyG.SelectMany(p => p.Tags).Distinct(),
+                                    Resources = propertyG.SelectMany(p => p.Resources).Distinct()
+                                }
+                        ),
                         Source = g.SelectMany(resource => resource.Source).Distinct()
                     };
 
