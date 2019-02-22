@@ -81,6 +81,15 @@ namespace enhetsregisteret_etl
                                         new Resource { Type = new[] { "Land" }, Code = new[] { enhet[adresse.ToLower() + ".landkode"] }, Title = new[] { enhet[adresse.ToLower() + ".land"] } }
                                     }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
                                 }
+                            ).Union(
+                                from overordnet in new[] { enhet["overordnetEnhet"] }
+                                where !String.IsNullOrEmpty(overordnet)
+                                select new Property {
+                                    Name = "Overordnet",
+                                    Resources = new[] {
+                                        new Property.Resource { Type = new[] { "Enhet" }, Code = new[] { overordnet }, Target = ResourceTarget("Enheter", overordnet) }
+                                    }
+                                }
                             ),
                         Source = new[] { metadata.Value<string>("@id") }
                     }
@@ -91,14 +100,9 @@ namespace enhetsregisteret_etl
                     let metadata = MetadataFor(enhet)
                     where metadata.Value<string>("@id").StartsWith("Enheter/Enhetsregisteret") && !String.IsNullOrEmpty(enhet["overordnetEnhet"])
 
-                    from resource in new[] {
-                        new { ResourceId = enhet["organisasjonsnummer"], Name = "Overordnet", Code = enhet["overordnetEnhet"] },
-                        new { ResourceId = enhet["overordnetEnhet"], Name = "Underordnet", Code = enhet["organisasjonsnummer"] }
-                    }
-
                     select new Resource
                     {
-                        ResourceId = resource.ResourceId,
+                        ResourceId = enhet["overordnetEnhet"],
                         Type = new string[] { },
                         SubType = new string[] { },
                         Title = new string[] { },
@@ -107,14 +111,15 @@ namespace enhetsregisteret_etl
                         Tags = new string[] { },
                         Properties = new[] {
                             new Property {
-                                Name = resource.Name,
+                                Name = "Underordnet",
                                 Tags = new[] { "@union" },
                                 Resources = new[] {
-                                    new Property.Resource { Type = new[] { "Enhet" }, Code = new[] { resource.Code }, Target = ResourceTarget("Enheter", resource.Code) }
-                                }
+                                    new Property.Resource { Type = new[] { "Enhet" }, Code = new[] { enhet["organisasjonsnummer"] }, Target = ResourceTarget("Enheter", enhet["organisasjonsnummer"]) }
+                                },
+                                Source = new[] { metadata.Value<string>("@id") }
                             }
                         },
-                        Source = new[] { metadata.Value<string>("@id") }
+                        Source = new string[] { }
                     }
                 );
 
@@ -256,7 +261,8 @@ namespace enhetsregisteret_etl
                                 new Property {
                                     Name = propertyG.Key,
                                     Tags = propertyG.SelectMany(p => p.Tags).Distinct(),
-                                    Resources = propertyG.SelectMany(p => p.Resources).Distinct()
+                                    Resources = propertyG.SelectMany(p => p.Resources).Distinct(),
+                                    Source = propertyG.SelectMany(p => p.Source).Distinct()
                                 }
                         ),
                         Source = g.SelectMany(resource => resource.Source).Distinct()
