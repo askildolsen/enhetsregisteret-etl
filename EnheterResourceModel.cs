@@ -214,7 +214,7 @@ namespace enhetsregisteret_etl
                     where metadata.Value<string>("@id").StartsWith("Enheter/Naeringskode")
                     select new Resource
                     {
-                        ResourceId = naeringskode["code"],
+                        ResourceId = "Næringskode/" + naeringskode["code"],
                         Type = new string[] { "Næringskode" },
                         SubType = new string[] { },
                         Title = new string[] { naeringskode["name"] },
@@ -231,7 +231,7 @@ namespace enhetsregisteret_etl
                                     {
                                         Title = new[] { o["name"] },
                                         Code = new[] { o["code"] },
-                                        Target = ResourceTarget("Enheter", o["code"])
+                                        Target = ResourceTarget("Enheter", "Næringskode/" + o["code"])
                                     }
                             }
                         },
@@ -245,7 +245,7 @@ namespace enhetsregisteret_etl
                     where metadata.Value<string>("@id").StartsWith("Enheter/Sektorkode")
                     select new Resource
                     {
-                        ResourceId = sektorkode["code"],
+                        ResourceId = "Sektorkode/" + sektorkode["code"],
                         Type = new string[] { "Sektorkode" },
                         SubType = new string[] { },
                         Title = new string[] { sektorkode["name"] },
@@ -262,7 +262,7 @@ namespace enhetsregisteret_etl
                                     {
                                         Title = new[] { o["name"] },
                                         Code = new[] { o["code"] },
-                                        Target = ResourceTarget("Enheter", o["code"])
+                                        Target = ResourceTarget("Enheter", "Sektorkode/" + o["code"])
                                     }
                             }
                         },
