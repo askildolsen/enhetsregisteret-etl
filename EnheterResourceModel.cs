@@ -221,20 +221,20 @@ namespace enhetsregisteret_etl
                         Code =  new string[] { naeringskode["code"] },
                         Status = new string[] { },
                         Tags = new string[] { },
-                        Properties = new[] {
-                            new Property {
-                                Name = "Klassifisering",
-                                Resources = 
-                                    from o in Recurse(naeringskode, n => LoadDocument<Enheter>("Enheter/Naeringskode/" + n["parentCode"])).Reverse()
-                                    where o != null
-                                    select new Property.Resource
-                                    {
-                                        Title = new[] { o["name"] },
-                                        Code = new[] { o["code"] },
-                                        Target = ResourceTarget("Enheter", "Næringskode/" + o["code"])
-                                    }
-                            }
-                        },
+                        Properties = (
+                            new[] {
+                                new Property {
+                                    Name = "Klassifisering",
+                                    Resources = 
+                                        from o in Recurse(naeringskode, n => LoadDocument<Enheter>("Enheter/Naeringskode/" + n["parentCode"])).Skip(1).Reverse()
+                                        where o != null
+                                        select new Property.Resource
+                                        {
+                                            Target = ResourceTarget("Enheter", "Næringskode/" + o["code"])
+                                        }
+                                }
+                            }.Where(p => p.Resources.Any())
+                        ),
                         Source = new[] { metadata.Value<string>("@id") }
                     }
                 );
@@ -252,20 +252,20 @@ namespace enhetsregisteret_etl
                         Code =  new string[] { sektorkode["code"] },
                         Status = new string[] { },
                         Tags = new string[] { },
-                        Properties = new[] {
-                            new Property {
-                                Name = "Klassifisering",
-                                Resources = 
-                                    from o in Recurse(sektorkode, n => LoadDocument<Enheter>("Enheter/Sektorkode/" + n["parentCode"])).Reverse()
-                                    where o != null
-                                    select new Property.Resource
-                                    {
-                                        Title = new[] { o["name"] },
-                                        Code = new[] { o["code"] },
-                                        Target = ResourceTarget("Enheter", "Sektorkode/" + o["code"])
-                                    }
-                            }
-                        },
+                        Properties = (
+                            new[] {
+                                new Property {
+                                    Name = "Klassifisering",
+                                    Resources = 
+                                        from o in Recurse(sektorkode, n => LoadDocument<Enheter>("Enheter/Sektorkode/" + n["parentCode"])).Skip(1).Reverse()
+                                        where o != null
+                                        select new Property.Resource
+                                        {
+                                            Target = ResourceTarget("Enheter", "Sektorkode/" + o["code"])
+                                        }
+                                }
+                            }.Where(p => p.Resources.Any())
+                        ),
                         Source = new[] { metadata.Value<string>("@id") }
                     }
                 );
