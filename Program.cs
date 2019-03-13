@@ -16,95 +16,101 @@ namespace enhetsregisteret_etl
     {
         static void Main(string[] args)
         {
-            var sw = Stopwatch.StartNew();
-
-            if (DocumentStoreHolder.Store.Maintenance.Send(new GetIndexOperation("EnheterResourceIndex")) == null)
+            using (var store = new DocumentStore { Urls = new string[] { "http://localhost:8080" }, Database = "Digitalisert" })
             {
-                new EnheterResourceModel.EnheterResourceIndex().Execute(DocumentStoreHolder.Store);
-            }
+                store.Conventions.FindCollectionName = t => t.Name;
+                store.Initialize();
 
-            var bulkInsertEnheter = new ActionBlock<ExpandoObject[]>(batch =>
+                var sw = Stopwatch.StartNew();
+
+                if (store.Maintenance.Send(new GetIndexOperation("EnheterResourceIndex")) == null)
                 {
-                    using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
+                    new EnheterResourceModel.EnheterResourceIndex().Execute(store);
+                }
+
+                var bulkInsertEnheter = new ActionBlock<ExpandoObject[]>(batch =>
                     {
-                        foreach (dynamic e in batch)
+                        using (BulkInsertOperation bulkInsert = store.BulkInsert())
                         {
-                            bulkInsert.Store(
-                                e,
-                                "Enheter/Enhetsregisteret/" + e.organisasjonsnummer,
-                                new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
-                            );
+                            foreach (dynamic e in batch)
+                            {
+                                bulkInsert.Store(
+                                    e,
+                                    "Enheter/Enhetsregisteret/" + e.organisasjonsnummer,
+                                    new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
+                                );
+                            }
                         }
+
+                        Console.Write(".");
+                    },
+                    new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 2 }
+                );
+
+                var batchEnheter = new BatchBlock<ExpandoObject>(10000, new GroupingDataflowBlockOptions { BoundedCapacity = 10000 });
+                batchEnheter.LinkTo(bulkInsertEnheter, new DataflowLinkOptions { PropagateCompletion = true});
+
+                Parallel.ForEach(new[] { "enheter", "underenheter"}, (dataset) =>
+                {
+                    foreach (ExpandoObject e in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/" + dataset)))
+                    {
+                        batchEnheter.Post(e);
+                    }
+                    Console.Write(" {0} {1} lest ", sw.Elapsed, dataset);
+                });
+
+                batchEnheter.Complete();
+                bulkInsertEnheter.Completion.Wait();
+
+                Console.WriteLine(" Enheter: {0}", sw.Elapsed);
+
+                using (BulkInsertOperation bulkInsert = store.BulkInsert())
+                {
+                    foreach (dynamic frivillig in Csv.ExpandoStream(WebRequest.Create("http://hotell.difi.no/download/brreg/frivillighetsregisteret")))
+                    {
+                        bulkInsert.Store(
+                            frivillig,
+                            "Enheter/Frivillighetsregisteret/" + frivillig.orgnr,
+                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
+                        );
+                    }
+                }
+
+                Console.WriteLine(". Frivillighetsregisteret: {0}", sw.Elapsed);
+
+                using (BulkInsertOperation bulkInsert = store.BulkInsert())
+                {
+                    foreach (dynamic stotte in Xml.ExpandoStream(WebRequest.Create("https://data.brreg.no/rofs/od/rofs/stottetildeling/nob")))
+                    {
+                        bulkInsert.Store(
+                            stotte,
+                            "Enheter/Stotteregisteret/" + stotte.tildelingId,
+                            new MetadataAsDictionary(new Dictionary<string, object> { { "@collection", "Enheter"}})
+                        );
+                    }
+                }
+
+                Console.WriteLine(". Stotteregisteret: {0}", sw.Elapsed);
+
+                using (BulkInsertOperation bulkInsert = store.BulkInsert())
+                {
+                    foreach (dynamic naeringskode in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/30.csv?language=nb")))
+                    {
+                        bulkInsert.Store(
+                            naeringskode,
+                            "Enheter/Naeringskode/" + naeringskode.code,
+                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
+                        );
                     }
 
-                    Console.Write(".");
-                },
-                new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 2 }
-            );
-
-            var batchEnheter = new BatchBlock<ExpandoObject>(10000, new GroupingDataflowBlockOptions { BoundedCapacity = 10000 });
-            batchEnheter.LinkTo(bulkInsertEnheter, new DataflowLinkOptions { PropagateCompletion = true});
-
-            Parallel.ForEach(new[] { "enheter", "underenheter"}, (dataset) =>
-            {
-                foreach (ExpandoObject e in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/" + dataset)))
-                {
-                    batchEnheter.Post(e);
-                }
-                Console.Write(" {0} {1} lest ", sw.Elapsed, dataset);
-            });
-
-            batchEnheter.Complete();
-            bulkInsertEnheter.Completion.Wait();
-
-            Console.WriteLine(" Enheter: {0}", sw.Elapsed);
-
-            using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
-            {
-                foreach (dynamic frivillig in Csv.ExpandoStream(WebRequest.Create("http://hotell.difi.no/download/brreg/frivillighetsregisteret")))
-                {
-                    bulkInsert.Store(
-                        frivillig,
-                        "Enheter/Frivillighetsregisteret/" + frivillig.orgnr,
-                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
-                    );
-                }
-            }
-
-            Console.WriteLine(". Frivillighetsregisteret: {0}", sw.Elapsed);
-
-            using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
-            {
-                foreach (dynamic stotte in Xml.ExpandoStream(WebRequest.Create("https://data.brreg.no/rofs/od/rofs/stottetildeling/nob")))
-                {
-                    bulkInsert.Store(
-                        stotte,
-                        "Enheter/Stotteregisteret/" + stotte.tildelingId,
-                        new MetadataAsDictionary(new Dictionary<string, object> { { "@collection", "Enheter"}})
-                    );
-                }
-            }
-
-            Console.WriteLine(". Stotteregisteret: {0}", sw.Elapsed);
-
-            using (BulkInsertOperation bulkInsert = DocumentStoreHolder.Store.BulkInsert())
-            {
-                foreach (dynamic naeringskode in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/30.csv?language=nb")))
-                {
-                    bulkInsert.Store(
-                        naeringskode,
-                        "Enheter/Naeringskode/" + naeringskode.code,
-                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
-                    );
-                }
-
-                foreach (dynamic sektorkode in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/92.csv?language=nb")))
-                {
-                    bulkInsert.Store(
-                        sektorkode,
-                        "Enheter/Sektorkode/" + sektorkode.code,
-                        new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
-                    );
+                    foreach (dynamic sektorkode in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/92.csv?language=nb")))
+                    {
+                        bulkInsert.Store(
+                            sektorkode,
+                            "Enheter/Sektorkode/" + sektorkode.code,
+                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
+                        );
+                    }
                 }
             }
         }
