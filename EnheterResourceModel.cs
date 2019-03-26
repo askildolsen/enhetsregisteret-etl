@@ -129,6 +129,7 @@ namespace enhetsregisteret_etl
                     from frivillig in enheter
                     let metadata = MetadataFor(frivillig)
                     where metadata.Value<string>("@id").StartsWith("Enheter/Frivillighetsregisteret")
+                        && LoadDocument<Enheter>("Enheter/Enhetsregisteret/" + frivillig["orgnr"]) != null
                     select new Resource
                     {
                         ResourceId =  frivillig["orgnr"],
@@ -161,6 +162,7 @@ namespace enhetsregisteret_etl
                     from stotte in enheter
                     let metadata = MetadataFor(stotte)
                     where metadata.Value<string>("@id").StartsWith("Enheter/Stotteregisteret")
+                        && LoadDocument<Enheter>("Enheter/Enhetsregisteret/" + stotte["stottemottakerOrganisasjonsnummer"]) != null
                     select new Resource
                     {
                         ResourceId = stotte["stottemottakerOrganisasjonsnummer"],
