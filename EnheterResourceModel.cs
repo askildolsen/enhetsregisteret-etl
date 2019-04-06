@@ -325,17 +325,9 @@ namespace enhetsregisteret_etl
             public override IndexDefinition CreateIndexDefinition()
             {
                 var indexDefinition = base.CreateIndexDefinition();
+                indexDefinition.Configuration = new IndexConfiguration { { "Indexing.MapTimeoutInSec", "120"} };
 
-                return new IndexDefinition
-                {
-                    Name = indexDefinition.Name,
-                    Maps = indexDefinition.Maps,
-                    Reduce = indexDefinition.Reduce,
-                    Fields = indexDefinition.Fields,
-                    OutputReduceToCollection = indexDefinition.OutputReduceToCollection,
-                    AdditionalSources = indexDefinition.AdditionalSources,
-                    Configuration = new IndexConfiguration { { "Indexing.MapTimeoutInSec", "120"} }
-                };
+                return indexDefinition;
             }
         }
 
