@@ -89,7 +89,7 @@ namespace enhetsregisteret_etl
                                 select new Property {
                                     Name = "Overordnet",
                                     Resources = new[] {
-                                        new Property.Resource { Target = ResourceTarget("Enheter", overordnet) }
+                                        new Property.Resource { ResourceId = overordnet, Target = ResourceTarget("Enheter", overordnet) }
                                     }
                                 }
                             ),
@@ -116,7 +116,7 @@ namespace enhetsregisteret_etl
                                 Name = "Underordnet",
                                 Tags = new[] { "@union" },
                                 Resources = new[] {
-                                    new Property.Resource { Target = ResourceTarget("Enheter", enhet["organisasjonsnummer"]) }
+                                    new Property.Resource { ResourceId = enhet["organisasjonsnummer"], Target = ResourceTarget("Enheter", enhet["organisasjonsnummer"]) }
                                 },
                                 Source = new[] { metadata.Value<string>("@id") }
                             }
