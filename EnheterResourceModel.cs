@@ -78,9 +78,9 @@ namespace enhetsregisteret_etl
                                         (enhet[adresse + ".landkode"] != "NO") ? enhet[adresse + ".land"] : ""
                                     }.Where(a => !String.IsNullOrEmpty(a)),
                                     Resources = new[] {
-                                        new Property.Resource { Code = new[] { enhet[adresse + ".postnummer"] }, Title = new[] { enhet[adresse + ".poststed"] }, Target = ResourceTarget("Enheter", "Poststed/" + enhet[adresse + ".postnummer"]) },
-                                        new Property.Resource { Code = new[] { enhet[adresse + ".kommunenummer"] }, Title = new[] { enhet[adresse + ".kommune"] }, Target = ResourceTarget("Enheter", "Kommune/" + enhet[adresse + ".kommunenummer"]) },
-                                        new Property.Resource { Code = new[] { enhet[adresse + ".landkode"] }, Title = new[] { enhet[adresse + ".land"] }, Target = ResourceTarget("Enheter", "Land/" + enhet[adresse + ".landkode"]) }
+                                        new Property.Resource { Type = new[] { "Poststed" }, Code = new[] { enhet[adresse + ".postnummer"] }, Title = new[] { enhet[adresse + ".poststed"] }, Target = ResourceTarget("Enheter", "Poststed/" + enhet[adresse + ".postnummer"]) },
+                                        new Property.Resource { Type = new[] { "Kommune" }, Code = new[] { enhet[adresse + ".kommunenummer"] }, Title = new[] { enhet[adresse + ".kommune"] }, Target = ResourceTarget("Enheter", "Kommune/" + enhet[adresse + ".kommunenummer"]) },
+                                        new Property.Resource { Type = new[] { "Land" }, Code = new[] { enhet[adresse + ".landkode"] }, Title = new[] { enhet[adresse + ".land"] }, Target = ResourceTarget("Enheter", "Land/" + enhet[adresse + ".landkode"]) }
                                     }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
                                 }
                             ).Union(
