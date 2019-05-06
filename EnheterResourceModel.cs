@@ -51,9 +51,9 @@ namespace enhetsregisteret_etl
                                     new Property {
                                         Name = "Naeringskode",
                                         Resources = new[] {
-                                            new Property.Resource { Code = new[] { enhet["naeringskode1.kode"] }, Title = new[] { enhet["naeringskode1.beskrivelse"] }, Target = ResourceTarget("Enheter", "Næringskode/" + enhet["naeringskode1.kode"]) },
-                                            new Property.Resource { Code = new[] { enhet["naeringskode2.kode"] }, Title = new[] { enhet["naeringskode2.beskrivelse"] }, Target = ResourceTarget("Enheter", "Næringskode/" + enhet["naeringskode2.kode"]) },
-                                            new Property.Resource { Code = new[] { enhet["naeringskode3.kode"] }, Title = new[] { enhet["naeringskode3.beskrivelse"] }, Target = ResourceTarget("Enheter", "Næringskode/" + enhet["naeringskode3.kode"]) },
+                                            new Resource { Code = new[] { enhet["naeringskode1.kode"] }, Title = new[] { enhet["naeringskode1.beskrivelse"] } },
+                                            new Resource { Code = new[] { enhet["naeringskode2.kode"] }, Title = new[] { enhet["naeringskode2.beskrivelse"] } },
+                                            new Resource { Code = new[] { enhet["naeringskode3.kode"] }, Title = new[] { enhet["naeringskode3.beskrivelse"] } },
                                         }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
                                     }
                                 }
@@ -62,7 +62,7 @@ namespace enhetsregisteret_etl
                                     new Property {
                                         Name = "Sektorkode",
                                         Resources = new[] {
-                                            new Property.Resource { Code = new[] { enhet["institusjonellSektorkode.kode"] }, Title = new[] { enhet["institusjonellSektorkode.beskrivelse"] }, Target = ResourceTarget("Enheter", "Sektorkode/" + enhet["institusjonellSektorkode.kode"]) }
+                                            new Resource { Code = new[] { enhet["institusjonellSektorkode.kode"] }, Title = new[] { enhet["institusjonellSektorkode.beskrivelse"] } }
                                         }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
                                     }
                                 }.Where(p => p.Resources.Any())
@@ -78,9 +78,9 @@ namespace enhetsregisteret_etl
                                         (enhet[adresse + ".landkode"] != "NO") ? enhet[adresse + ".land"] : ""
                                     }.Where(a => !String.IsNullOrEmpty(a)),
                                     Resources = new[] {
-                                        new Property.Resource { Type = new[] { "Poststed" }, Code = new[] { enhet[adresse + ".postnummer"] }, Title = new[] { enhet[adresse + ".poststed"] }, Target = ResourceTarget("Enheter", "Poststed/" + enhet[adresse + ".postnummer"]) },
-                                        new Property.Resource { Type = new[] { "Kommune" }, Code = new[] { enhet[adresse + ".kommunenummer"] }, Title = new[] { enhet[adresse + ".kommune"] }, Target = ResourceTarget("Enheter", "Kommune/" + enhet[adresse + ".kommunenummer"]) },
-                                        new Property.Resource { Type = new[] { "Land" }, Code = new[] { enhet[adresse + ".landkode"] }, Title = new[] { enhet[adresse + ".land"] }, Target = ResourceTarget("Enheter", "Land/" + enhet[adresse + ".landkode"]) }
+                                        new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet[adresse + ".postnummer"] }, Title = new[] { enhet[adresse + ".poststed"] } },
+                                        new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet[adresse + ".kommunenummer"] }, Title = new[] { enhet[adresse + ".kommune"] } },
+                                        new Resource { Type = new[] { "Land" }, Code = new[] { enhet[adresse + ".landkode"] }, Title = new[] { enhet[adresse + ".land"] } }
                                     }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
                                 }
                             ).Union(
@@ -89,7 +89,7 @@ namespace enhetsregisteret_etl
                                 select new Property {
                                     Name = "Overordnet",
                                     Resources = new[] {
-                                        new Property.Resource { ResourceId = overordnet, Target = ResourceTarget("Enheter", overordnet) }
+                                        new Resource { ResourceId = overordnet }
                                     }
                                 }
                             ),
@@ -116,7 +116,7 @@ namespace enhetsregisteret_etl
                                 Name = "Underordnet",
                                 Tags = new[] { "@union" },
                                 Resources = new[] {
-                                    new Property.Resource { ResourceId = enhet["organisasjonsnummer"], Target = ResourceTarget("Enheter", enhet["organisasjonsnummer"]) }
+                                    new Resource { ResourceId = enhet["organisasjonsnummer"] }
                                 },
                                 Source = new[] { metadata.Value<string>("@id") }
                             }
@@ -238,9 +238,9 @@ namespace enhetsregisteret_etl
                                     Resources = 
                                         from o in Recurse(naeringskode, n => LoadDocument<Enheter>("Enheter/Naeringskode/" + n["parentCode"])).Skip(1).Reverse()
                                         where o != null
-                                        select new Property.Resource
+                                        select new Resource
                                         {
-                                            Target = ResourceTarget("Enheter", "Næringskode/" + o["code"])
+                                            ResourceId = "Næringskode/" + o["code"]
                                         }
                                 }
                             }.Where(p => p.Resources.Any())
@@ -269,9 +269,9 @@ namespace enhetsregisteret_etl
                                     Resources = 
                                         from o in Recurse(sektorkode, n => LoadDocument<Enheter>("Enheter/Sektorkode/" + n["parentCode"])).Skip(1).Reverse()
                                         where o != null
-                                        select new Property.Resource
+                                        select new Resource
                                         {
-                                            Target = ResourceTarget("Enheter", "Sektorkode/" + o["code"])
+                                            ResourceId = "Sektorkode/" + o["code"]
                                         }
                                 }
                             }.Where(p => p.Resources.Any())
