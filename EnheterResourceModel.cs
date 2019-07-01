@@ -243,7 +243,7 @@ namespace enhetsregisteret_etl
                     }
                 );
 
-                Reduce = results  =>
+                Reduce = results =>
                     from result in results
                     group result by result.ResourceId into g
                     select new Resource
