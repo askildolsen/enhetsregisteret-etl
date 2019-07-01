@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Raven.Client.Documents.Indexes;
-using Raven.Client.Documents.Linq.Indexing;
 using static enhetsregisteret_etl.ResourceModel;
+using static enhetsregisteret_etl.ResourceModelUtils;
 
 namespace enhetsregisteret_etl
 {
@@ -292,19 +292,7 @@ namespace enhetsregisteret_etl
                         Code = g.SelectMany(r => r.Code).Distinct(),
                         Status = g.SelectMany(r => r.Status).Distinct(),
                         Tags = g.SelectMany(r => r.Tags).Distinct(),
-                        Properties = (
-                            g.SelectMany(r => r.Properties).Where(p => !p.Tags.Contains("@union"))
-                        ).Union(
-                            from property in g.SelectMany(r => r.Properties).Where(p => p.Tags.Contains("@union"))
-                            group property by property.Name into propertyG
-                            select
-                                new Property {
-                                    Name = propertyG.Key,
-                                    Tags = propertyG.SelectMany(p => p.Tags).Distinct(),
-                                    Resources = propertyG.SelectMany(p => p.Resources).Distinct(),
-                                    Source = propertyG.SelectMany(p => p.Source).Distinct()
-                                }
-                        ),
+                        Properties = (IEnumerable<Property>)Properties(g.SelectMany(r => r.Properties)),
                         Source = g.SelectMany(resource => resource.Source).Distinct()
                     };
 
@@ -317,7 +305,7 @@ namespace enhetsregisteret_etl
                 {
                     {
                         "ResourceModel",
-                        ReadResourceFile("enhetsregisteret_etl.ResourceModel.cs")
+                        ReadResourceFile("enhetsregisteret_etl.ResourceModelUtils.cs")
                     }
                 };
             }
@@ -328,18 +316,6 @@ namespace enhetsregisteret_etl
                 indexDefinition.Configuration = new IndexConfiguration { { "Indexing.MapTimeoutInSec", "120"} };
 
                 return indexDefinition;
-            }
-        }
-
-        private static string ReadResourceFile(string filename)
-        {
-            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            using (var stream = assembly.GetManifestResourceStream(filename))
-            {
-                using (var reader = new System.IO.StreamReader(stream))
-                {
-                    return reader.ReadToEnd();
-                }
             }
         }
     }
