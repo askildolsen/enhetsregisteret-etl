@@ -129,15 +129,17 @@ namespace enhetsregisteret_etl
                     from frivillig in enheter
                     let metadata = MetadataFor(frivillig)
                     where metadata.Value<string>("@id").StartsWith("Enheter/Frivillighetsregisteret")
-                        && LoadDocument<Enheter>("Enheter/Enhetsregisteret/" + frivillig["orgnr"]) != null
                     select new Resource
                     {
-                        ResourceId =  frivillig["orgnr"],
-                        Type = new string[] { },
+                        ResourceId = frivillig["orgnr"],
+                        Type = new[] { "Frivillig" },
                         SubType = new string[] { },
-                        Title = new string[] { },
-                        Code =  new string[] { },
-                        Status = new string[] { "frivillig" },
+                        Title = new[] { frivillig["navn"] },
+                        Code =  new[] { frivillig["orgnr"] },
+                        Status = 
+                            from status in new[] { "vedtekter", "arsregnskap", "grasrotandel" }
+                            where frivillig[status] == "J"
+                            select status,
                         Tags =
                             new[] {
                                 frivillig["kategori1_tekst"],
