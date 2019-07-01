@@ -162,22 +162,19 @@ namespace enhetsregisteret_etl
                     from stotte in enheter
                     let metadata = MetadataFor(stotte)
                     where metadata.Value<string>("@id").StartsWith("Enheter/Stotteregisteret")
-                        && LoadDocument<Enheter>("Enheter/Enhetsregisteret/" + stotte["stottemottakerOrganisasjonsnummer"]) != null
                     select new Resource
                     {
-                        ResourceId = stotte["stottemottakerOrganisasjonsnummer"],
-                        Type = new string[] { },
-                        SubType = new string[] { },
-                        Title = new string[] { },
-                        Code =  new string[] { },
-                        Status = new string[] { "stottemottaker" },
-                        Tags =
-                            new[] {
-                                stotte["navnStotteordning"],
-                                stotte["formaal"],
-                                stotte["stotteinstrument"]
-                            }.Where(s => !String.IsNullOrEmpty(s)),
-                        Properties = new Property[] { },
+                        ResourceId = stotte["tildelingId"],
+                        Type = new[] { stotte["typeTiltak"] },
+                        SubType = new[] { stotte["stotteinstrument"] },
+                        Title = new[] { stotte["navnStotteordning"], stotte["navnStottetiltak"] }.Where(t => t != null).Select(t => t.Trim()).Distinct(),
+                        Code =  new[] { stotte["esaId"] },
+                        Status = new string[] { },
+                        Tags = new[] { stotte["formaal"] },
+                        Properties = new[] {
+                            new Property { Name = "Mottaker" , Resources = new[] { new Resource { ResourceId = stotte["stottemottakerOrganisasjonsnummer"] } } },
+                            new Property { Name = "Giver" , Resources = new[] { new Resource { ResourceId = stotte["stottegiverOrganisasjonsnummer"] } } }
+                        },
                         Source = new[] { metadata.Value<string>("@id") }
                     }
                 );
