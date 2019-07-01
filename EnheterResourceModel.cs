@@ -180,42 +180,6 @@ namespace enhetsregisteret_etl
                 );
 
                 AddMap<Enheter>(enheter =>
-                    from enhet in enheter
-                    let metadata = MetadataFor(enhet)
-                    where metadata.Value<string>("@id").StartsWith("Enheter/Enhetsregisteret")
-
-                    let resources = (
-                        from adresse in new[] { "postadresse", "forretningsadresse", "beliggenhetsadresse" }
-                        where enhet[adresse + ".landkode"] != null
-
-                        from resource in new[] {
-                            new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet[adresse + ".postnummer"] }, Title = new[] { enhet[adresse + ".poststed"] } },
-                            new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet[adresse + ".kommunenummer"] }, Title = new[] { enhet[adresse + ".kommune"] } },
-                            new Resource { Type = new[] { "Land" }, Code = new[] { enhet[adresse + ".landkode"] }, Title = new[] { enhet[adresse + ".land"] } }
-                        }
-
-                        where resource.Code.Any(code => !String.IsNullOrEmpty(code))
-                        select resource
-                    )
-
-                    from resource in resources
-                    group resource by new { resource.Type, resource.Code } into g
-
-                    select new Resource
-                    {
-                        ResourceId = g.First().Type.First() + "/" + g.First().Code.First(),
-                        Type = g.First().Type,
-                        SubType = new string[] { },
-                        Title = g.First().Title,
-                        Code =  g.First().Code,
-                        Status = new string[] { },
-                        Tags = new string[] { },
-                        Properties = new Property[] { },
-                        Source = new string[] { }
-                    }
-                );
-
-                AddMap<Enheter>(enheter =>
                     from naeringskode in enheter
                     let metadata = MetadataFor(naeringskode)
                     where metadata.Value<string>("@id").StartsWith("Enheter/Naeringskode")
