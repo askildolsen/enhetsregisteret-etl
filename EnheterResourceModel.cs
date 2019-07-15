@@ -18,7 +18,7 @@ namespace enhetsregisteret_etl
                 AddMap<Enheter>(enheter =>
                     from enhet in enheter
                     let metadata = MetadataFor(enhet)
-                    where metadata.Value<string>("@id").StartsWith("Enheter/Enhetsregisteret")
+                    where Char.IsDigit(metadata.Value<string>("@id")[8])
                     select new Resource
                     {
                         ResourceId =  enhet["organisasjonsnummer"],

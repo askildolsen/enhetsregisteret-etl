@@ -36,7 +36,7 @@ namespace enhetsregisteret_etl
                             {
                                 bulkInsert.Store(
                                     e,
-                                    "Enheter/Enhetsregisteret/" + e.organisasjonsnummer,
+                                    "Enheter/" + e.organisasjonsnummer,
                                     new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
                                 );
                             }
