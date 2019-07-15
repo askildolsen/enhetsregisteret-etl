@@ -98,34 +98,6 @@ namespace enhetsregisteret_etl
                 );
 
                 AddMap<Enheter>(enheter =>
-                    from enhet in enheter
-                    let metadata = MetadataFor(enhet)
-                    where metadata.Value<string>("@id").StartsWith("Enheter/Enhetsregisteret") && !String.IsNullOrEmpty(enhet["overordnetEnhet"])
-
-                    select new Resource
-                    {
-                        ResourceId = enhet["overordnetEnhet"],
-                        Type = new string[] { },
-                        SubType = new string[] { },
-                        Title = new string[] { },
-                        Code =  new string[] { },
-                        Status = new string[] { },
-                        Tags = new string[] { },
-                        Properties = new[] {
-                            new Property {
-                                Name = "Underordnet",
-                                Tags = new[] { "@union" },
-                                Resources = new[] {
-                                    new Resource { ResourceId = enhet["organisasjonsnummer"] }
-                                },
-                                Source = new[] { metadata.Value<string>("@id") }
-                            }
-                        },
-                        Source = new string[] { }
-                    }
-                );
-
-                AddMap<Enheter>(enheter =>
                     from frivillig in enheter
                     let metadata = MetadataFor(frivillig)
                     where metadata.Value<string>("@id").StartsWith("Enheter/Frivillighetsregisteret")
