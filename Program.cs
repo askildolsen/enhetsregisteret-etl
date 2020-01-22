@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -36,7 +36,7 @@ namespace enhetsregisteret_etl
                             {
                                 bulkInsert.Store(
                                     e,
-                                    "Enheter/" + e.organisasjonsnummer,
+                                    "Enheter/" + e.orgnr,
                                     new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
                                 );
                             }
@@ -50,9 +50,9 @@ namespace enhetsregisteret_etl
                 var batchEnheter = new BatchBlock<ExpandoObject>(10000, new GroupingDataflowBlockOptions { BoundedCapacity = 10000 });
                 batchEnheter.LinkTo(bulkInsertEnheter, new DataflowLinkOptions { PropagateCompletion = true});
 
-                Parallel.ForEach(new[] { "enheter", "underenheter"}, (dataset) =>
+                Parallel.ForEach(new[] { "enhetsregisteret", "underenheter"}, (dataset) =>
                 {
-                    foreach (ExpandoObject e in Csv.ExpandoStreamGZip(WebRequest.Create("http://data.brreg.no/enhetsregisteret/download/" + dataset)))
+                    foreach (ExpandoObject e in Csv.ExpandoStream(WebRequest.Create("http://hotell.difi.no/download/brreg/" + dataset)))
                     {
                         batchEnheter.Post(e);
                     }

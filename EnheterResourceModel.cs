@@ -21,28 +21,22 @@ namespace enhetsregisteret_etl
                     where Char.IsDigit(metadata.Value<string>("@id")[8])
                     select new Resource
                     {
-                        ResourceId =  enhet["organisasjonsnummer"],
+                        ResourceId =  enhet["orgnr"],
                         Type = new[] { "Enhet" },
-                        SubType = new [] { enhet["orgform.beskrivelse"] },
+                        SubType = new string [] { },
                         Title = new[] { enhet["navn"] },
-                        Code =  new[] { enhet["organisasjonsnummer"] },
+                        Code =  new[] { enhet["orgnr"] },
                         Status = 
-                            from status in new[] { "konkurs", "underAvvikling", "underTvangsavviklingEllerTvangsopplosning" }
+                            from status in new[] { "konkurs", "avvikling", "tvangsavvikling" }
                             where enhet[status] == "J"
                             select status,
-                        Tags =
-                            new[] {
-                                enhet["naeringskode1.beskrivelse"],
-                                enhet["naeringskode2.beskrivelse"],
-                                enhet["naeringskode3.beskrivelse"],
-                                enhet["institusjonellSektorkode.beskrivelse"]
-                            }.Where(s => !String.IsNullOrEmpty(s)),
+                        Tags = new string[] { },
                         Properties = (
                                 new[] {
                                     new Property {
                                         Name = "Organisasjonsform",
                                         Resources = new[] {
-                                            new Resource { Code = new[] { enhet["orgform.kode"] }, Title = new[] { enhet["orgform.beskrivelse"] }}
+                                            new Resource { Code = new[] { enhet["organisasjonsform"] } }
                                         }
                                     }
                                 }
@@ -51,9 +45,9 @@ namespace enhetsregisteret_etl
                                     new Property {
                                         Name = "Naeringskode",
                                         Resources = new[] {
-                                            new Resource { Code = new[] { enhet["naeringskode1.kode"] }, Title = new[] { enhet["naeringskode1.beskrivelse"] } },
-                                            new Resource { Code = new[] { enhet["naeringskode2.kode"] }, Title = new[] { enhet["naeringskode2.beskrivelse"] } },
-                                            new Resource { Code = new[] { enhet["naeringskode3.kode"] }, Title = new[] { enhet["naeringskode3.beskrivelse"] } },
+                                            new Resource { Code = new[] { enhet["nkode1"] } },
+                                            new Resource { Code = new[] { enhet["nkode2"] } },
+                                            new Resource { Code = new[] { enhet["nkode3"] } },
                                         }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
                                     }
                                 }
@@ -62,29 +56,36 @@ namespace enhetsregisteret_etl
                                     new Property {
                                         Name = "Sektorkode",
                                         Resources = new[] {
-                                            new Resource { Code = new[] { enhet["institusjonellSektorkode.kode"] }, Title = new[] { enhet["institusjonellSektorkode.beskrivelse"] } }
+                                            new Resource { Code = new[] { enhet["sektorkode"] } }
                                         }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
                                     }
                                 }.Where(p => p.Resources.Any())
                             ).Union(
-                                from adressenavn in new[] { "Postadresse", "Forretningsadresse", "Beliggenhetsadresse" }
-                                let adresse = adressenavn.ToLower()
-                                where enhet[adresse + ".landkode"] != null
+                                from adresse in new[] {
+                                    new { navn = "Postadresse", adr = enhet["postadresse"], pnr = enhet["ppostnr"], psted = enhet["ppoststed"], land = enhet["ppostland"], knr = enhet["ppostkommnr"], kmn = enhet["ppostkommnavn"] },
+                                    new { navn = "Forretningsadresse", adr = enhet["forretningsadr"], pnr = enhet["forradrpostnr"], psted = enhet["forradrpoststed"], land = enhet["forradrland"], knr = enhet["forradrkommnr"], kmn = enhet["forradrkommnavn"] }
+                                }
+                                where adresse.land != null
                                 select new Property {
-                                    Name = adressenavn,
+                                    Name = adresse.navn,
                                     Value = new[] {
-                                        enhet[adresse + ".adresse"],
-                                        ((enhet[adresse + ".postnummer"] + " ") ?? "") + enhet[adresse + ".poststed"],
-                                        (enhet[adresse + ".landkode"] != "NO") ? enhet[adresse + ".land"] : ""
+                                        adresse.adr,
+                                        ((adresse.pnr + " ") ?? "") + adresse.psted,
+                                        enhet["ppostland"]
                                     }.Where(a => !String.IsNullOrEmpty(a)),
-                                    Resources = new[] {
-                                        new Resource { Type = new[] { "Poststed" }, Code = new[] { enhet[adresse + ".postnummer"] }, Title = new[] { enhet[adresse + ".poststed"] } },
-                                        new Resource { Type = new[] { "Kommune" }, Code = new[] { enhet[adresse + ".kommunenummer"] }, Title = new[] { enhet[adresse + ".kommune"] } },
-                                        new Resource { Type = new[] { "Land" }, Code = new[] { enhet[adresse + ".landkode"] }, Title = new[] { enhet[adresse + ".land"] } }
-                                    }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
+                                    Resources = (
+                                        new[] {
+                                            new Resource { Type = new[] { "Poststed" }, Code = new[] { adresse.pnr }, Title = new[] { adresse.psted } },
+                                            new Resource { Type = new[] { "Kommune" }, Code = new[] { adresse.knr }, Title = new[] { adresse.kmn } }
+                                        }
+                                    ).Union(
+                                        new[] {
+                                            new Resource { Type = new[] { "Land" }, Title = new[] { adresse.land } }
+                                        }
+                                    ).Where(r => r.Title.Any(title => !String.IsNullOrEmpty(title)))
                                 }
                             ).Union(
-                                from overordnet in new[] { enhet["overordnetEnhet"] }
+                                from overordnet in new[] { enhet["hovedenhet"] }
                                 where !String.IsNullOrEmpty(overordnet)
                                 select new Property {
                                     Name = "Overordnet",
