@@ -7,8 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using Raven.Client.Documents.BulkInsert;
-using Raven.Client.Json;
 
 namespace enhetsregisteret_etl
 {

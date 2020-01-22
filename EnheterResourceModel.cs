@@ -240,7 +240,7 @@ namespace enhetsregisteret_etl
                 AdditionalSources = new Dictionary<string, string>
                 {
                     {
-                        "ResourceModel",
+                        "ResourceModelUtils",
                         ReadResourceFile("enhetsregisteret_etl.ResourceModelUtils.cs")
                     }
                 };
