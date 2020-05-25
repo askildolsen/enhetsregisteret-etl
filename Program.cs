@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -90,6 +90,15 @@ namespace enhetsregisteret_etl
 
                 using (BulkInsertOperation bulkInsert = store.BulkInsert())
                 {
+                    foreach (dynamic organisasjonsform in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/578.csv?language=nb")))
+                    {
+                        bulkInsert.Store(
+                            organisasjonsform,
+                            "Enheter/Organisasjonsform/" + organisasjonsform.code,
+                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
+                        );
+                    }
+
                     foreach (dynamic naeringskode in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/30.csv?language=nb")))
                     {
                         bulkInsert.Store(

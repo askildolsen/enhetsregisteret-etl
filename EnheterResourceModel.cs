@@ -36,28 +36,28 @@ namespace enhetsregisteret_etl
                                     new Property {
                                         Name = "Organisasjonsform",
                                         Resources = new[] {
-                                            new Resource { Code = new[] { enhet["organisasjonsform"] } }
+                                            new Resource { ResourceId = "Organisasjonsform/" + enhet["organisasjonsform"] }
                                         }
                                     }
                                 }
                             ).Union(
                                 new[] {
                                     new Property {
-                                        Name = "Naeringskode",
-                                        Resources = new[] {
-                                            new Resource { Code = new[] { enhet["nkode1"] } },
-                                            new Resource { Code = new[] { enhet["nkode2"] } },
-                                            new Resource { Code = new[] { enhet["nkode3"] } },
-                                        }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
+                                        Name = "Næringskode",
+                                        Resources =
+                                            from naeringskode in new[] { enhet["nkode1"], enhet["nkode2"], enhet["nkode3"] }
+                                            where !String.IsNullOrEmpty(naeringskode)
+                                            select new Resource { ResourceId = "Næringskode/" + naeringskode }
                                     }
                                 }
                             ).Union(
                                 new[] {
                                     new Property {
                                         Name = "Sektorkode",
-                                        Resources = new[] {
-                                            new Resource { Code = new[] { enhet["sektorkode"] } }
-                                        }.Where(r => r.Code.Any(code => !String.IsNullOrEmpty(code)))
+                                        Resources =
+                                            from sektorkode in new[] { enhet["sektorkode"] }
+                                            where !String.IsNullOrEmpty(sektorkode)
+                                            select new Resource { ResourceId = "Sektorkode/" + sektorkode }
                                     }
                                 }.Where(p => p.Resources.Any())
                             ).Union(
@@ -181,6 +181,24 @@ namespace enhetsregisteret_etl
                                 }
                             }.Where(p => p.Resources.Any())
                         ),
+                        Source = new[] { metadata.Value<string>("@id") }
+                    }
+                );
+
+                AddMap<Enheter>(enheter =>
+                    from organisasjonsform in enheter
+                    let metadata = MetadataFor(organisasjonsform)
+                    where metadata.Value<string>("@id").StartsWith("Enheter/Organisasjonsform")
+                    select new Resource
+                    {
+                        ResourceId = "Organisasjonsform/" + organisasjonsform["code"],
+                        Type = new string[] { "Organisasjonsform" },
+                        SubType = new string[] { },
+                        Title = new string[] { organisasjonsform["name"] },
+                        Code =  new string[] { organisasjonsform["code"] },
+                        Status = new string[] { },
+                        Tags = new string[] { },
+                        Properties = new Property[] { },
                         Source = new[] { metadata.Value<string>("@id") }
                     }
                 );
