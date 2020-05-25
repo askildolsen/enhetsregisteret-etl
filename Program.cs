@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -21,8 +21,6 @@ namespace enhetsregisteret_etl
                 store.Initialize();
 
                 var sw = Stopwatch.StartNew();
-
-                new EnheterResourceModel.EnheterResourceIndex().Execute(store);
 
                 var bulkInsertEnheter = new ActionBlock<ExpandoObject[]>(batch =>
                     {
@@ -117,6 +115,8 @@ namespace enhetsregisteret_etl
                         );
                     }
                 }
+
+                new EnheterResourceModel.EnheterResourceIndex().Execute(store);
             }
         }
     }
