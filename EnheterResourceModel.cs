@@ -263,14 +263,6 @@ namespace enhetsregisteret_etl
                     }
                 };
             }
-
-            public override IndexDefinition CreateIndexDefinition()
-            {
-                var indexDefinition = base.CreateIndexDefinition();
-                indexDefinition.Configuration = new IndexConfiguration { { "Indexing.MapBatchSize", "8192"} };
-
-                return indexDefinition;
-            }
         }
     }
 }
