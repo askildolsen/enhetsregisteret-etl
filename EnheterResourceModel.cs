@@ -250,8 +250,7 @@ namespace enhetsregisteret_etl
                         Source = g.SelectMany(resource => resource.Source).Distinct()
                     };
 
-                Index(r => r.Properties, FieldIndexing.No);
-                Store(r => r.Properties, FieldStorage.Yes);
+                Index(Raven.Client.Constants.Documents.Indexing.Fields.AllFields, FieldIndexing.No);
 
                 OutputReduceToCollection = "EnheterResource";
 
