@@ -22,6 +22,36 @@ namespace enhetsregisteret_etl
 
                 var sw = Stopwatch.StartNew();
 
+                using (BulkInsertOperation bulkInsert = store.BulkInsert())
+                {
+                    foreach (dynamic organisasjonsform in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/578.csv?language=nb")))
+                    {
+                        bulkInsert.Store(
+                            organisasjonsform,
+                            "Enheter/Organisasjonsform/" + organisasjonsform.code,
+                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
+                        );
+                    }
+
+                    foreach (dynamic naeringskode in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/30.csv?language=nb")))
+                    {
+                        bulkInsert.Store(
+                            naeringskode,
+                            "Enheter/Naeringskode/" + naeringskode.code,
+                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
+                        );
+                    }
+
+                    foreach (dynamic sektorkode in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/92.csv?language=nb")))
+                    {
+                        bulkInsert.Store(
+                            sektorkode,
+                            "Enheter/Sektorkode/" + sektorkode.code,
+                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
+                        );
+                    }
+                }
+
                 var bulkInsertEnheter = new ActionBlock<ExpandoObject[]>(batch =>
                     {
                         using (BulkInsertOperation bulkInsert = store.BulkInsert())
@@ -85,36 +115,6 @@ namespace enhetsregisteret_etl
                 }
 
                 Console.WriteLine(". Stotteregisteret: {0}", sw.Elapsed);
-
-                using (BulkInsertOperation bulkInsert = store.BulkInsert())
-                {
-                    foreach (dynamic organisasjonsform in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/578.csv?language=nb")))
-                    {
-                        bulkInsert.Store(
-                            organisasjonsform,
-                            "Enheter/Organisasjonsform/" + organisasjonsform.code,
-                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
-                        );
-                    }
-
-                    foreach (dynamic naeringskode in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/30.csv?language=nb")))
-                    {
-                        bulkInsert.Store(
-                            naeringskode,
-                            "Enheter/Naeringskode/" + naeringskode.code,
-                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
-                        );
-                    }
-
-                    foreach (dynamic sektorkode in Csv.ExpandoStream(WebRequest.Create("https://data.ssb.no/api/klass/v1//versions/92.csv?language=nb")))
-                    {
-                        bulkInsert.Store(
-                            sektorkode,
-                            "Enheter/Sektorkode/" + sektorkode.code,
-                            new MetadataAsDictionary(new Dictionary<string, object> {{ "@collection", "Enheter"}})
-                        );
-                    }
-                }
 
                 new EnheterResourceModel.EnheterResourceIndex().Execute(store);
             }
