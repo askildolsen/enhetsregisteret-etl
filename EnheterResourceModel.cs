@@ -25,7 +25,9 @@ namespace enhetsregisteret_etl
                         Type = new[] { "Enhet" },
                         SubType = new string [] { },
                         Title = new[] { enhet["navn"] },
+                        SubTitle = new string[] { },
                         Code =  new[] { enhet["orgnr"] },
+                        Body = new string[] { },
                         Status = 
                             from status in new[] { "konkurs", "avvikling", "tvangsavvikling" }
                             where enhet[status] == "J"
@@ -115,7 +117,9 @@ namespace enhetsregisteret_etl
                         Type = new[] { "Frivillig" },
                         SubType = new string[] { },
                         Title = new[] { frivillig["navn"] },
+                        SubTitle = new string[] { },
                         Code =  new[] { frivillig["orgnr"] },
+                        Body = new string[] { },
                         Status = 
                             from status in new[] { "vedtekter", "arsregnskap", "grasrotandel" }
                             where frivillig[status] == "J"
@@ -150,7 +154,9 @@ namespace enhetsregisteret_etl
                         Type = new[] { stotte["typeTiltak"] },
                         SubType = new[] { stotte["stotteinstrument"] },
                         Title = new[] { stotte["navnStotteordning"], stotte["navnStottetiltak"] }.Where(t => t != null).Select(t => t.Trim()).Distinct(),
+                        SubTitle = new string[] { },
                         Code =  new[] { stotte["esaId"] },
+                        Body = new string[] { },
                         Status = new string[] { },
                         Tags = new[] { stotte["formaal"] },
                         Properties = new[] {
@@ -168,10 +174,12 @@ namespace enhetsregisteret_etl
                     select new Resource
                     {
                         ResourceId = "Næringskode/" + naeringskode["code"],
-                        Type = new string[] { "Næringskode" },
+                        Type = new[] { "Næringskode" },
                         SubType = new string[] { },
-                        Title = new string[] { naeringskode["name"] },
-                        Code =  new string[] { naeringskode["code"] },
+                        Title = new[] { naeringskode["shortName"] },
+                        SubTitle = (naeringskode["shortName"] != naeringskode["name"]) ? new[] { naeringskode["name"] } : new string[] { },
+                        Code =  new[] { naeringskode["code"] },
+                        Body = new[] { naeringskode["notes"] },
                         Status = new string[] { },
                         Tags = new string[] { },
                         Properties = (
@@ -199,10 +207,12 @@ namespace enhetsregisteret_etl
                     select new Resource
                     {
                         ResourceId = "Organisasjonsform/" + organisasjonsform["code"],
-                        Type = new string[] { "Organisasjonsform" },
+                        Type = new[] { "Organisasjonsform" },
                         SubType = new string[] { },
-                        Title = new string[] { organisasjonsform["name"] },
-                        Code =  new string[] { organisasjonsform["code"] },
+                        Title = new[] { organisasjonsform["name"] },
+                        SubTitle = new string[] { },
+                        Code =  new[] { organisasjonsform["code"] },
+                        Body = new string[] { },
                         Status = new string[] { },
                         Tags = new string[] { },
                         Properties = new Property[] { },
@@ -217,10 +227,12 @@ namespace enhetsregisteret_etl
                     select new Resource
                     {
                         ResourceId = "Sektorkode/" + sektorkode["code"],
-                        Type = new string[] { "Sektorkode" },
+                        Type = new[] { "Sektorkode" },
                         SubType = new string[] { },
-                        Title = new string[] { sektorkode["name"] },
-                        Code =  new string[] { sektorkode["code"] },
+                        Title = new[] { sektorkode["name"] },
+                        SubTitle = new string[] { },
+                        Code =  new[] { sektorkode["code"] },
+                        Body = new[] { sektorkode["notes"] },
                         Status = new string[] { },
                         Tags = new string[] { },
                         Properties = (
@@ -250,7 +262,9 @@ namespace enhetsregisteret_etl
                         Type = g.SelectMany(r => r.Type).Distinct(),
                         SubType = g.SelectMany(r => r.SubType).Distinct(),
                         Title = g.SelectMany(r => r.Title).Distinct(),
+                        SubTitle = g.SelectMany(r => r.SubTitle).Distinct(),
                         Code = g.SelectMany(r => r.Code).Distinct(),
+                        Body = g.SelectMany(r => r.Body).Distinct(),
                         Status = g.SelectMany(r => r.Status).Distinct(),
                         Tags = g.SelectMany(r => r.Tags).Distinct(),
                         Properties = (IEnumerable<Property>)Properties(g.SelectMany(r => r.Properties)),
