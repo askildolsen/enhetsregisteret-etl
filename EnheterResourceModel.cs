@@ -93,6 +93,13 @@ namespace enhetsregisteret_etl
                                         new Resource { ResourceId = overordnet }
                                     }
                                 }
+                            ).Union(
+                                from ansatte in new[] { enhet["ansatte_antall"] }
+                                where !String.IsNullOrEmpty(ansatte)
+                                select new Property {
+                                    Name = "Ansatte",
+                                    Value = new[] { ansatte }
+                                }
                             ),
                         Source = new[] { metadata.Value<string>("@id") }
                     }
